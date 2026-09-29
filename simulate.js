@@ -1,279 +1,267 @@
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_URL = "https://kfncoyavignqtwudkeff.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtmbmNveWF2aWducXR3dWRrZWZmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA2NTUwODYsImV4cCI6MjEwNjIzMTA4Nn0.bFM2j0ldqn7lYTEag0Q5xd_PRU4Ps6EyZ1FMhxq1rsE";
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error("SUPABASE_URL and SUPABASE_ANON_KEY environment variables are required.");
-  process.exit(1);
+const DEMO_MONITOR_ONLY_BASE = 700;
+
+async function apiRequest(path, options = {}) {
+  const url = `${SUPABASE_URL}/rest/v1${path}`;
+  const headers = {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal",
+    ...options.headers
+  };
+  return fetch(url, { ...options, headers });
 }
 
-const headers = {
-  "apikey": SUPABASE_ANON_KEY,
-  "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-  "Content-Type": "application/json",
-  "Prefer": "return=minimal"
-};
-
-function boxMuller() {
-  let u = 0;
-  let v = 0;
-  while (u === 0) u = Math.random();
-  while (v === 0) v = Math.random();
-  return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+async function fetchStandards() {
+  const res = await apiRequest("/standards?select=*&order=sort_order");
+  if (!res.ok) {
+    throw new Error(`Failed to fetch standards: HTTP ${res.status}`);
+  }
+  return res.json();
 }
 
-function computeNormalValue(s, stepIndex) {
-  const hasMin = s.min_value !== null && s.min_value !== undefined;
-  const hasMax = s.max_value !== null && s.max_value !== undefined;
+async function checkExistingSimulatorRows() {
+  const res = await apiRequest("/readings?select=id&source=eq.simulator&limit=1", {
+    headers: { "Prefer": "count=exact" }
+  });
+  if (!res.ok) return false;
+  const rows = await res.json();
+  return rows.length > 0;
+}
 
-  let target = 700;
+async function postReadingsBatch(readings) {
+  if (readings.length === 0) return;
+  const res = await apiRequest("/readings", {
+    method: "POST",
+    body: JSON.stringify(readings)
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    console.log(`Batch insert failure: HTTP ${res.status} - ${errText}`);
+  } else {
+    console.log(`Posted batch of ${readings.length} readings`);
+  }
+}
+
+async function postSingleReading(parameter, value) {
+  const body = [{
+    parameter,
+    value,
+    source: "simulator",
+    recorded_at: new Date().toISOString()
+  }];
+  const res = await apiRequest("/readings", {
+    method: "POST",
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    console.log(`${parameter}: ${value} - Failure HTTP ${res.status} - ${errText}`);
+  } else {
+    console.log(`${parameter}: ${value}`);
+  }
+}
+
+function computeTargetValue(standard) {
+  const hasMin = standard.min_value !== null && standard.min_value !== undefined;
+  const hasMax = standard.max_value !== null && standard.max_value !== undefined;
+
   if (hasMin && hasMax) {
-    target = (Number(s.min_value) + Number(s.max_value)) / 2;
-  } else if (hasMax) {
-    target = 0.60 * Number(s.max_value);
-  } else if (hasMin) {
-    target = 1.40 * Number(s.min_value);
+    return (Number(standard.min_value) + Number(standard.max_value)) / 2;
+  }
+  if (hasMax) {
+    return Number(standard.max_value) * 0.6;
+  }
+  if (hasMin) {
+    return Number(standard.min_value) * 1.4;
+  }
+  return DEMO_MONITOR_ONLY_BASE;
+}
+
+function calculateNormalValue(standard, step) {
+  const target = computeTargetValue(standard);
+  const hasMin = standard.min_value !== null && standard.min_value !== undefined;
+  const hasMax = standard.max_value !== null && standard.max_value !== undefined;
+
+  if (!hasMin && !hasMax) {
+    const drift = Math.sin(step * 0.1) * 0.05;
+    return Math.round((target * (1 + drift)) * 100) / 100;
   }
 
-  const wave = Math.sin(stepIndex * 0.1) * 0.05;
-  const noise = boxMuller() * 0.02;
+  const wave = Math.sin(step * 0.15) * 0.05;
+  const noise = (Math.random() - 0.5) * 0.03;
   let val = target * (1 + wave + noise);
 
-  val = Math.max(target * 0.92, Math.min(target * 1.08, val));
-
-  if (hasMin && val <= Number(s.min_value)) {
-    val = Number(s.min_value) + (target - Number(s.min_value)) * 0.1;
+  if (hasMin && val < Number(standard.min_value)) {
+    val = Number(standard.min_value) + 0.1;
   }
-  if (hasMax && val >= Number(s.max_value)) {
-    val = Number(s.max_value) - (Number(s.max_value) - target) * 0.1;
+  if (hasMax && val > Number(standard.max_value)) {
+    val = Number(standard.max_value) - 0.1;
   }
 
   return Math.round(val * 100) / 100;
 }
 
-function computeExceedValue(s) {
-  if (s.max_value !== null && s.max_value !== undefined) {
-    return Math.round(1.30 * Number(s.max_value) * 100) / 100;
+async function backfillHistory(standards) {
+  console.log("Backfilling historical readings...");
+  const readings = [];
+  const now = Date.now();
+
+  const liveStandards = standards.filter(s => s.measurement === "live");
+  for (let i = 143; i >= 0; i--) {
+    const timestamp = new Date(now - i * 10 * 60 * 1000).toISOString();
+    for (const s of liveStandards) {
+      readings.push({
+        parameter: s.parameter,
+        value: calculateNormalValue(s, 144 - i),
+        source: "simulator",
+        recorded_at: timestamp
+      });
+    }
   }
-  if (s.min_value !== null && s.min_value !== undefined) {
-    return Math.round(0.70 * Number(s.min_value) * 100) / 100;
+
+  const labStandards = standards.filter(s => s.measurement === "lab" && (s.min_value !== null || s.max_value !== null));
+  for (let d = 5; d >= 0; d--) {
+    const timestamp = new Date(now - d * 24 * 60 * 60 * 1000).toISOString();
+    for (const s of labStandards) {
+      readings.push({
+        parameter: s.parameter,
+        value: calculateNormalValue(s, 10 + d),
+        source: "simulator",
+        recorded_at: timestamp
+      });
+    }
   }
-  return 910;
+
+  const batchSize = 500;
+  for (let i = 0; i < readings.length; i += batchSize) {
+    const batch = readings.slice(i, i + batchSize);
+    await postReadingsBatch(batch);
+  }
+  console.log("Historical backfill completed");
 }
 
-async function postBatch(rows) {
-  const res = await fetch(SUPABASE_URL + "/rest/v1/readings", {
-    method: "POST",
-    headers: headers,
-    body: JSON.stringify(rows)
-  });
-  if (!res.ok) {
-    console.error("HTTP " + res.status + " on batch insert");
-  }
-  return res.ok;
-}
+async function runLiveLoop(standards, overrides = {}) {
+  let step = 0;
+  const liveStandards = standards.filter(s => s.measurement === "live");
 
-async function postSingleReading(param, val) {
-  const res = await fetch(SUPABASE_URL + "/rest/v1/readings", {
-    method: "POST",
-    headers: headers,
-    body: JSON.stringify({
-      parameter: param,
-      value: val,
-      source: "simulator",
-      recorded_at: new Date().toISOString()
-    })
-  });
-  return res.ok;
-}
+  const tick = async () => {
+    step++;
+    const nowIso = new Date().toISOString();
+    const batch = [];
 
-async function postValveEvent(state, reason) {
-  const res = await fetch(SUPABASE_URL + "/rest/v1/valve_events", {
-    method: "POST",
-    headers: headers,
-    body: JSON.stringify({
-      state: state,
-      reason: reason,
-      source: "simulator",
-      recorded_at: new Date().toISOString()
-    })
-  });
-  return res.ok;
+    for (const s of liveStandards) {
+      let val;
+      if (overrides[s.parameter]) {
+        val = overrides[s.parameter](step);
+      } else {
+        val = calculateNormalValue(s, step);
+      }
+      batch.push({
+        parameter: s.parameter,
+        value: val,
+        source: "simulator",
+        recorded_at: nowIso
+      });
+    }
+
+    const res = await apiRequest("/readings", {
+      method: "POST",
+      body: JSON.stringify(batch)
+    });
+
+    if (res.ok) {
+      const summary = batch.map(b => `${b.parameter}: ${b.value}`).join(", ");
+      console.log(`Live cycle ${step}: ${summary}`);
+    } else {
+      console.log(`Live cycle ${step} failed with HTTP ${res.status}`);
+    }
+  };
+
+  await tick();
+  setInterval(tick, 5000);
 }
 
 async function main() {
   const args = process.argv.slice(2);
-  const forceBackfill = args.includes("--force");
-  const cleanArgs = args.filter(a => a !== "--force");
-  const firstArg = cleanArgs[0] || "demo";
+  const mode = args[0] || "demo";
+  const force = args.includes("--force");
 
-  let mode = "demo";
-  let modeParam = null;
-
-  if (firstArg === "demo") {
-    mode = "demo";
-  } else if (firstArg === "live") {
-    mode = "live";
-  } else if (firstArg.startsWith("exceed:")) {
-    mode = "exceed";
-    modeParam = firstArg.slice(7);
-  } else if (firstArg.startsWith("fix:")) {
-    mode = "fix";
-    modeParam = firstArg.slice(4);
-  } else {
-    console.error("Unknown mode: " + firstArg);
+  let standards;
+  try {
+    standards = await fetchStandards();
+  } catch (err) {
+    console.error(err.message);
     process.exit(1);
-  }
-
-  const stdRes = await fetch(SUPABASE_URL + "/rest/v1/standards?select=*&order=sort_order.asc", {
-    headers: {
-      "apikey": SUPABASE_ANON_KEY,
-      "Authorization": "Bearer " + SUPABASE_ANON_KEY
-    }
-  });
-
-  if (!stdRes.ok) {
-    console.error("HTTP " + stdRes.status + " failed to fetch standards");
-    process.exit(1);
-  }
-
-  const standards = await stdRes.json();
-
-  if (!Array.isArray(standards) || standards.length === 0) {
-    console.error("Standards table is empty. Configure standards before running simulation.");
-    process.exit(1);
-  }
-
-  if (mode === "fix") {
-    const target = standards.find(s => s.parameter.toLowerCase() === modeParam.toLowerCase());
-    if (!target) {
-      console.error("Parameter not found: " + modeParam);
-      process.exit(1);
-    }
-    const val = computeNormalValue(target, 0);
-    const ok = await postSingleReading(target.parameter, val);
-    if (ok) {
-      await postValveEvent("open", "Parameter recovered: " + target.parameter);
-      console.log("Fixed " + target.parameter + " with value " + val);
-    }
-    process.exit(ok ? 0 : 1);
-  }
-
-  if (mode === "exceed") {
-    const target = standards.find(s => s.parameter.toLowerCase() === modeParam.toLowerCase());
-    if (!target) {
-      console.error("Parameter not found: " + modeParam);
-      process.exit(1);
-    }
-    const exceedVal = computeExceedValue(target);
-    const ok = await postSingleReading(target.parameter, exceedVal);
-    if (ok) {
-      await postValveEvent("locked", "Parameter breach: " + target.parameter + " = " + exceedVal);
-      console.log("Exceed reading posted: " + target.parameter + " = " + exceedVal);
-    }
-    process.exit(ok ? 0 : 1);
   }
 
   if (mode === "demo") {
-    let shouldBackfill = forceBackfill;
-
-    if (!shouldBackfill) {
-      const checkRes = await fetch(SUPABASE_URL + "/rest/v1/readings?select=id&source=eq.simulator&limit=1", {
-        headers: headers
-      });
-      if (checkRes.ok) {
-        const existing = await checkRes.json();
-        if (!Array.isArray(existing) || existing.length === 0) {
-          shouldBackfill = true;
-        }
-      }
+    const exists = await checkExistingSimulatorRows();
+    if (!exists || force) {
+      await backfillHistory(standards);
+    } else {
+      console.log("Existing simulator data found; skipping backfill (use --force to overwrite)");
+    }
+    await runLiveLoop(standards);
+  } else if (mode === "live") {
+    await runLiveLoop(standards);
+  } else if (mode.startsWith("exceed:")) {
+    const paramName = mode.slice(7);
+    const standard = standards.find(s => s.parameter.toLowerCase() === paramName.toLowerCase());
+    if (!standard) {
+      console.error(`Error: Parameter "${paramName}" not found in standards table.`);
+      process.exit(1);
     }
 
-    if (shouldBackfill) {
-      console.log("Backfilling 24h telemetry...");
-      const now = Date.now();
-      const backfillRows = [];
-
-      const liveStandards = standards.filter(s => s.measurement === "live");
-      for (const s of liveStandards) {
-        for (let i = 0; i < 144; i++) {
-          const ts = new Date(now - (144 - i) * 10 * 60 * 1000).toISOString();
-          const val = computeNormalValue(s, i);
-          backfillRows.push({
-            parameter: s.parameter,
-            value: val,
-            source: "simulator",
-            recorded_at: ts
-          });
-        }
-      }
-
-      const labStandards = standards.filter(s => s.measurement === "lab");
-      for (const s of labStandards) {
-        for (let d = 5; d >= 0; d--) {
-          const ts = new Date(now - d * 24 * 60 * 60 * 1000).toISOString();
-          const val = computeNormalValue(s, 5 - d);
-          backfillRows.push({
-            parameter: s.parameter,
-            value: val,
-            source: "simulator",
-            recorded_at: ts
-          });
-        }
-      }
-
-      backfillRows.sort((a, b) => new Date(a.recorded_at) - new Date(b.recorded_at));
-
-      for (let i = 0; i < backfillRows.length; i += 500) {
-        const chunk = backfillRows.slice(i, i + 500);
-        await postBatch(chunk);
-      }
-      console.log("Backfill complete (" + backfillRows.length + " rows).");
+    const hasMax = standard.max_value !== null && standard.max_value !== undefined;
+    const hasMin = standard.min_value !== null && standard.min_value !== undefined;
+    let targetExceed;
+    if (hasMax) {
+      targetExceed = Number(standard.max_value) * 1.3;
+    } else if (hasMin) {
+      targetExceed = Number(standard.min_value) * 0.7;
+    } else {
+      console.error(`Error: Parameter "${paramName}" has no limits configured to exceed.`);
+      process.exit(1);
     }
+    targetExceed = Math.round(targetExceed * 100) / 100;
+
+    if (standard.measurement === "lab") {
+      await postSingleReading(standard.parameter, targetExceed);
+      process.exit(0);
+    } else {
+      console.log(`Ramping ${standard.parameter} to out-of-limit value ${targetExceed}`);
+      const baseVal = computeTargetValue(standard);
+      const overrides = {
+        [standard.parameter]: (step) => {
+          const progress = Math.min(1, step / 6);
+          const current = baseVal + (targetExceed - baseVal) * progress;
+          return Math.round(current * 100) / 100;
+        }
+      };
+      await runLiveLoop(standards, overrides);
+    }
+  } else if (mode.startsWith("fix:")) {
+    const paramName = mode.slice(4);
+    const standard = standards.find(s => s.parameter.toLowerCase() === paramName.toLowerCase());
+    if (!standard) {
+      console.error(`Error: Parameter "${paramName}" not found in standards table.`);
+      process.exit(1);
+    }
+    const safeVal = Math.round(computeTargetValue(standard) * 100) / 100;
+    await postSingleReading(standard.parameter, safeVal);
+    process.exit(0);
+  } else {
+    console.error(`Unknown mode: ${mode}`);
+    console.error("Usage: node simulate.js [demo|live|exceed:<Param>|fix:<Param>] [--force]");
+    process.exit(1);
   }
-
-  let currentValveState = "open";
-  await postValveEvent(currentValveState, "Simulator started in normal mode");
-
-  const liveStandards = standards.filter(s => s.measurement === "live");
-  const labStandards = standards.filter(s => s.measurement === "lab");
-
-  let step = 0;
-
-  async function cycle() {
-    step++;
-    const summary = [];
-    let hasFail = false;
-
-    for (const s of liveStandards) {
-      const val = computeNormalValue(s, step);
-      summary.push(s.parameter + ": " + val);
-
-      if (s.min_value !== null && val < Number(s.min_value)) hasFail = true;
-      if (s.max_value !== null && val > Number(s.max_value)) hasFail = true;
-
-      await postSingleReading(s.parameter, val);
-    }
-
-    if (step % 60 === 1) {
-      for (const ls of labStandards) {
-        const labVal = computeNormalValue(ls, step);
-        summary.push(ls.parameter + "(lab): " + labVal);
-        await postSingleReading(ls.parameter, labVal);
-      }
-    }
-
-    const nextValveState = hasFail ? "locked" : "open";
-    if (nextValveState !== currentValveState) {
-      currentValveState = nextValveState;
-      await postValveEvent(currentValveState, hasFail ? "Automatic trip on live reading" : "All live standards compliant");
-      console.log("Valve state changed to: " + currentValveState);
-    }
-
-    console.log(new Date().toLocaleTimeString() + " - " + summary.join(", "));
-  }
-
-  await cycle();
-  setInterval(cycle, 5000);
 }
 
-main();
+main().catch(err => {
+  console.error("Fatal error:", err.message);
+  process.exit(1);
+});
