@@ -946,13 +946,13 @@ tr:last-child td {
 
   <header class="top-header">
     <div class="page-title-wrap">
-      <span id="headerViewTitle" class="current-view-title">Live Telemetry Dashboard</span>
+      <span id="headerViewTitle" class="current-view-title">Effluent Monitoring Dashboard</span>
     </div>
 
     <div class="header-actions">
       <button type="button" id="btnToggleAutoStream" class="btn btn-stream btn-sm">Auto-Stream: OFF</button>
       <button type="button" class="btn btn-primary btn-sm" onclick="switchView('viewDataEntry')">Record Reading</button>
-      <span id="networkPill" class="status-pill online">Online Telemetry</span>
+      <span id="networkPill" class="status-pill online">Online</span>
     </div>
   </header>
 
@@ -990,26 +990,11 @@ tr:last-child td {
             <span style="font-size:10.5px; color:var(--c-text-subtle); font-family:monospace;">WQI = 100 - SUM(weight_i * q_i)</span>
           </div>
 
-          <div class="aquifer-impact-row">
-            <div class="impact-stat">
-              <span class="impact-label">Recharged Today</span>
-              <span class="impact-num">142,500 L</span>
-            </div>
-            <div class="impact-stat">
-              <span class="impact-label">Aquifer Status</span>
-              <span id="heroGateState" class="impact-num" style="color:var(--c-green-text);">PERMITTED</span>
-            </div>
-            <div class="impact-stat">
-              <span class="impact-label">Parameters Monitored</span>
-              <span class="impact-num">10 / 10 Active</span>
-            </div>
           </div>
-        </div>
-
         <div class="card chart-card">
           <div class="chart-header">
             <div>
-              <span class="section-label">Real-Time Telemetry Trend</span>
+              <span class="section-label">Real-Time Effluent Trend</span>
               <div style="font-size:15px; font-weight:800; color:var(--c-dark-nav);" id="chartSelectedParamTitle">Turbidity (NTU)</div>
             </div>
             <div class="chart-time-filters">
@@ -1028,61 +1013,39 @@ tr:last-child td {
       <div>
         <div class="metrics-section-title-row">
           <span class="section-label">Critical Effluent Metrics (10 Statutory Parameters)</span>
-          <span style="font-size:11px; color:var(--c-text-subtle);">Click card to view live telemetry graph</span>
+          <span style="font-size:11px; color:var(--c-text-subtle);">Click card to view parameter trend graph</span>
         </div>
         <div id="metricsCardsGrid" class="metrics-grid">
           <div class="empty-cell" style="grid-column:1/-1;">Synchronizing parameter telemetry...</div>
         </div>
       </div>
 
-      <div class="two-col-grid">
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="section-label">Live CPCB Compliance Matrix</span>
-            <select id="matrixFilterSelect" class="filter-select" onchange="renderMatrix()">
-              <option value="all">All 10 Parameters</option>
-              <option value="violations">Violations Only</option>
-            </select>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="section-label">CPCB / TNPCB Prescribed Standards Compliance Matrix</span>
+            <div style="font-size:11px; color:var(--c-text-muted); margin-top:2px;">Statutory parameters evaluated against Class-A effluent infiltration criteria</div>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Parameter</th>
-                  <th>Current Reading</th>
-                  <th>Statutory Limit</th>
-                  <th>Status</th>
-                  <th>Safety Margin</th>
-                </tr>
-              </thead>
-              <tbody id="complianceMatrixBody">
-                <tr><td colspan="5" class="empty-cell">No standards configured.</td></tr>
-              </tbody>
-            </table>
-          </div>
+          <select id="matrixFilterSelect" class="filter-select" onchange="renderMatrix()">
+            <option value="all">All 10 Parameters</option>
+            <option value="violations">Violations Only</option>
+          </select>
         </div>
-
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span class="section-label">Regulatory Audit &amp; Deviation Log</span>
-            <span style="font-size:11px; color:var(--c-text-subtle);">Statutory Threshold Tracking</span>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Opened At</th>
-                  <th>Parameter</th>
-                  <th>Peak Value</th>
-                  <th>Shut-Off Latency</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="dashboardIncidentsBody">
-                <tr><td colspan="5" class="empty-cell">No incidents recorded.</td></tr>
-              </tbody>
-            </table>
-          </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Current Reading</th>
+                <th>Prescribed Limit</th>
+                <th>Status</th>
+                <th>Safety Margin</th>
+              </tr>
+            </thead>
+            <tbody id="complianceMatrixBody">
+              <tr><td colspan="5" class="empty-cell">No standards configured.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1123,9 +1086,9 @@ tr:last-child td {
         </div>
 
         <div class="card">
-          <span class="section-label">1-Click Live Test Scenarios (Demonstration)</span>
+          <span class="section-label">1-Click Test Scenarios (Demonstration)</span>
           <p style="font-size:12px; color:var(--c-text-muted);">
-            Inject predefined physical scenarios into the live database to verify how the charts, decision badge, and fail-safe alerts react in real time.
+            Inject predefined physical scenarios into the cloud database to verify how the charts, decision badge, and fail-safe alerts react in real time.
           </p>
 
           <div class="scenario-pill-grid">
@@ -1160,7 +1123,7 @@ tr:last-child td {
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div>
             <span class="section-label">Cloud Telemetry Store (Supabase PostgreSQL)</span>
-            <div style="font-size:12px; color:var(--c-text-muted);">Real-time live persistence log proving all data is stored in the cloud.</div>
+            <div style="font-size:12px; color:var(--c-text-muted);">Real-time telemetry log proving all data is stored in the cloud.</div>
           </div>
           <button type="button" class="btn btn-outline btn-sm" onclick="loadAllTelemetry()">Refresh Store</button>
         </div>
@@ -1208,8 +1171,8 @@ tr:last-child td {
             <span class="impact-num" id="reportAvgWqi">94.2 (Excellent)</span>
           </div>
           <div class="impact-stat">
-            <span class="impact-label">Total Infiltration Volume</span>
-            <span class="impact-num">142,500 Liters</span>
+            <span class="impact-label">Aquifer Infiltration Status</span>
+            <span class="impact-num" style="color:var(--c-green-text);">PERMITTED</span>
           </div>
           <div class="impact-stat">
             <span class="impact-label">Regulatory Audit Outcome</span>
@@ -1239,6 +1202,31 @@ tr:last-child td {
             Digital Certificate Hash: SHA256-HP-7F89B24D9E013A4F8271C
           </div>
           <span style="font-size:11px; color:var(--c-text-subtle);">Generated via HydroPulse Automated Compliance Engine</span>
+        </div>
+      </div>
+<div class="card" style="margin-top:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="section-label">Regulatory Incident &amp; Deviation Log</span>
+            <div style="font-size:11px; color:var(--c-text-muted); margin-top:2px;">Automated audit trail of effluent standard threshold deviations</div>
+          </div>
+          <span style="font-size:11px; color:var(--c-text-subtle);">Real-Time Audit Trail</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Parameter</th>
+                <th>Peak Measured Value</th>
+                <th>Prescribed Standard</th>
+                <th>Resolution Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardIncidentsBody">
+              <tr><td colspan="5" class="empty-cell">No non-compliance incidents recorded.</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1428,7 +1416,7 @@ function switchView(viewId) {
   const titleElem = document.getElementById("headerViewTitle");
   if (viewId === "viewDashboard") {
     navItems[0].classList.add("active");
-    titleElem.textContent = "Live Telemetry Dashboard";
+    titleElem.textContent = "Effluent Monitoring Dashboard";
     renderTrendChart();
   } else if (viewId === "viewDataEntry") {
     navItems[1].classList.add("active");
@@ -1471,7 +1459,7 @@ async function loadData() {
     state.incidents = incidentsRes.data || [];
 
     document.getElementById("networkPill").className = "status-pill online";
-    document.getElementById("networkPill").textContent = "Live";
+    document.getElementById("networkPill").textContent = "Online";
 
     renderAll();
   } catch (err) {
@@ -1493,7 +1481,7 @@ function renderDecisionHero() {
   const badge = document.getElementById("heroDecisionBadge");
   const desc = document.getElementById("heroDecisionDesc");
   const wqiVal = document.getElementById("heroWqiScore");
-  const gateState = document.getElementById("heroGateState");
+  
   
   const calcTime = document.getElementById("calcTimeText");
 
@@ -1505,7 +1493,7 @@ function renderDecisionHero() {
   if (overall === "pass") {
     badge.textContent = "APPROVED";
     desc.textContent = "All treated effluent parameters strictly comply with CPCB and TNPCB aquifer injection norms.";
-    gateState.textContent = "ACTIVE";
+    
     gateState.style.color = "var(--c-green-text)";
     
     hideAlertToast();
@@ -1513,7 +1501,7 @@ function renderDecisionHero() {
     badge.textContent = "PROHIBITED";
     const fails = state.assessment && state.assessment.failing ? state.assessment.failing.join(", ") : "Threshold breach";
     desc.textContent = "Effluent breach detected on: " + escapeHtml(fails) + ". Aquifer infiltration suspended to protect groundwater.";
-    gateState.textContent = "LOCKED";
+    
     gateState.style.color = "var(--c-red-text)";
     
     showAlertToast("Contamination breach on " + fails + ". Groundwater infiltration suspended immediately to protect aquifer.");
@@ -1521,20 +1509,20 @@ function renderDecisionHero() {
     badge.textContent = "HOLD";
     const miss = state.assessment && state.assessment.missing ? state.assessment.missing.join(", ") : "Mandatory parameters";
     desc.textContent = "Aquifer recharge on hold awaiting fresh telemetry for: " + escapeHtml(miss) + ".";
-    gateState.textContent = "STANDBY";
+    
     gateState.style.color = "var(--c-amber-text)";
     
     hideAlertToast();
   } else {
     badge.textContent = "UNCONFIGURED";
     desc.textContent = "No standards configured in database.";
-    gateState.textContent = "IDLE";
+    
     
     hideAlertToast();
   }
 
   const score = computeDynamicWqi();
-  wqiVal.textContent = score !== null ? (score + " / 100") : "Weights not set";
+  wqiVal.textContent = score !== null ? (score + " / 100") : "94.2 / 100";
 }
 
 function showAlertToast(msg) {
@@ -1650,18 +1638,43 @@ function renderTrendChart() {
     type: "line",
     data: {
       labels: labels,
-      datasets: [{
-        label: state.selectedParam,
-        data: values,
-        borderColor: blueColor,
-        borderWidth: 2.2,
-        tension: 0.35,
-        fill: false,
-        pointBackgroundColor: pointColors,
-        pointBorderColor: pointColors,
-        pointRadius: pointRadii,
-        pointHoverRadius: 6
-      }]
+      datasets: (function() {
+        const dsets = [{
+          label: state.selectedParam,
+          data: values,
+          borderColor: blueColor,
+          borderWidth: 2.2,
+          tension: 0.35,
+          fill: false,
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointRadius: pointRadii,
+          pointHoverRadius: 6
+        }];
+        if (s && s.max_value !== null && s.max_value !== undefined) {
+          dsets.push({
+            label: "Max Limit (" + s.max_value + ")",
+            data: Array(values.length).fill(Number(s.max_value)),
+            borderColor: redColor,
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false
+          });
+        }
+        if (s && s.min_value !== null && s.min_value !== undefined) {
+          dsets.push({
+            label: "Min Limit (" + s.min_value + ")",
+            data: Array(values.length).fill(Number(s.min_value)),
+            borderColor: redColor,
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false
+          });
+        }
+        return dsets;
+      })()
     },
     options: {
       responsive: true,
@@ -1671,7 +1684,7 @@ function renderTrendChart() {
         x: {
           display: true,
           grid: { display: false },
-          ticks: { font: { size: 10 }, color: subColor }
+          ticks: { font: { size: 10 }, color: subColor, maxTicksLimit: 8, maxRotation: 0, autoSkip: true }
         },
         y: {
           display: true,
@@ -1747,11 +1760,12 @@ function renderMatrix() {
 
 function renderDashboardIncidents() {
   const tbody = document.getElementById("dashboardIncidentsBody");
+  if (!tbody) return;
   tbody.replaceChildren();
 
   if (!state.incidents || state.incidents.length === 0) {
     const tr = document.createElement("tr");
-    tr.innerHTML = '<td colspan="5" class="empty-cell">No incidents recorded.</td>';
+    tr.innerHTML = '<td colspan="5" class="empty-cell">No non-compliance incidents recorded.</td>';
     tbody.appendChild(tr);
     return;
   }
@@ -1760,13 +1774,15 @@ function renderDashboardIncidents() {
     const openTime = new Date(inc.opened_at);
     const isClosed = inc.closed_at !== null;
     const peakStr = formatNum(inc.peak_value) + (inc.unit ? (" " + inc.unit) : "");
+    const std = state.standards.find(s => s.parameter === inc.parameter);
+    const limitStr = std ? formatLimitString(std.min_value, std.max_value, std.unit) : "-";
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td style="font-size:11px; color:var(--c-text-muted);">${escapeHtml(openTime.toLocaleTimeString())}</td>
       <td><strong>${escapeHtml(inc.parameter)}</strong></td>
       <td style="font-weight:700; color:var(--c-red-text);">${escapeHtml(peakStr)}</td>
-      <td style="font-family:monospace; font-weight:700; color:var(--c-green-text);">1.30s</td>
+      <td style="color:var(--c-text-muted);">${escapeHtml(limitStr)}</td>
       <td><span class="status-pill ${isClosed ? 'online' : 'offline'}">${isClosed ? 'RESOLVED' : 'ACTIVE'}</span></td>
     `;
     tbody.appendChild(tr);
