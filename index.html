@@ -457,7 +457,7 @@ body {
 
 .bottom-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 24px;
 }
 
@@ -529,40 +529,6 @@ tr:last-child td {
   margin-right: 8px;
 }
 
-.pid-svg-wrap {
-  width: 100%;
-  background-color: var(--c-surface-light);
-  border: 1px solid var(--c-border);
-  border-radius: 8px;
-  padding: 16px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.flow-stats-row {
-  display: flex;
-  gap: 24px;
-  padding-top: 12px;
-  border-top: 1px solid var(--c-border);
-}
-
-.flow-stat-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.flow-stat-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  color: var(--c-text-muted);
-}
-
-.flow-stat-val {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--c-dark-nav);
-}
 
 .drawer-overlay {
   position: fixed;
@@ -870,66 +836,25 @@ tr:last-child td {
 
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <span class="section-label">Automated Valve SCADA P&amp;ID</span>
-        <span id="valveStateBadge" class="status-pill offline">LOCKED</span>
+        <span class="section-label">Incident Log &amp; Automated Shut-Off Latency</span>
       </div>
-
-      <div class="pid-svg-wrap">
-        <svg id="pidSvg" width="380" height="150" viewBox="0 0 380 150">
-          <rect x="10" y="55" width="48" height="40" rx="4" fill="var(--c-surface-subtle)" stroke="var(--c-border-strong)" stroke-width="1.5"/>
-          <text x="34" y="78" font-size="9" font-weight="700" fill="var(--c-dark-nav)" text-anchor="middle">Outlet</text>
-
-          <line x1="58" y1="75" x2="88" y2="75" stroke="var(--c-border-strong)" stroke-width="3"/>
-
-          <rect x="88" y="50" width="56" height="50" rx="4" fill="var(--c-surface-subtle)" stroke="var(--c-border-strong)" stroke-width="1.5"/>
-          <text x="116" y="78" font-size="9" font-weight="700" fill="var(--c-dark-nav)" text-anchor="middle">Filters</text>
-
-          <line x1="144" y1="75" x2="174" y2="75" stroke="var(--c-border-strong)" stroke-width="3"/>
-
-          <rect x="174" y="52" width="54" height="46" rx="4" fill="var(--c-surface-subtle)" stroke="var(--c-border-strong)" stroke-width="1.5"/>
-          <text x="201" y="78" font-size="9" font-weight="700" fill="var(--c-dark-nav)" text-anchor="middle">Sensors</text>
-
-          <line x1="228" y1="75" x2="256" y2="75" stroke="var(--c-border-strong)" stroke-width="3"/>
-
-          <circle id="pidValveCircle" cx="266" cy="75" r="10" fill="var(--c-red-main)"/>
-          <text x="266" y="78" font-size="7" font-weight="700" fill="var(--c-white)" text-anchor="middle">V</text>
-
-          <path id="pidFlowPathRecharge" d="M 276 75 L 316 75" stroke="var(--c-border-strong)" stroke-width="3" fill="none"/>
-          <rect id="pidRechargeWellBox" x="316" y="55" width="54" height="40" rx="4" fill="var(--c-surface-subtle)" stroke="var(--c-border-strong)" stroke-width="1.5"/>
-          <text x="343" y="78" font-size="8" font-weight="700" fill="var(--c-dark-nav)" text-anchor="middle">Recharge</text>
-
-          <path id="pidFlowPathBypass" d="M 266 85 L 266 125 L 316 125" stroke="var(--c-border-strong)" stroke-width="3" fill="none"/>
-          <rect x="316" y="108" width="54" height="34" rx="4" fill="var(--c-surface-subtle)" stroke="var(--c-border-strong)" stroke-width="1.5"/>
-          <text x="343" y="128" font-size="8" font-weight="700" fill="var(--c-dark-nav)" text-anchor="middle">Lagoon</text>
-        </svg>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Opened At</th>
+              <th>Parameter</th>
+              <th>Peak Value</th>
+              <th>Limits</th>
+              <th>Shut-Off Latency</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="incidentsTableBody">
+            <tr><td colspan="6" class="empty-cell">No incidents recorded.</td></tr>
+          </tbody>
+        </table>
       </div>
-
-      <div id="flowStatsWrap" class="flow-stats-row">
-        <div class="empty-cell" style="padding:12px; width:100%;">Flow metering standard not configured in database.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <span class="section-label">Incident Log &amp; Automated Shut-Off Latency</span>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Opened At</th>
-            <th>Parameter</th>
-            <th>Peak Value</th>
-            <th>Limits</th>
-            <th>Shut-Off Latency</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="incidentsTableBody">
-          <tr><td colspan="6" class="empty-cell">No incidents recorded.</td></tr>
-        </tbody>
-      </table>
     </div>
   </div>
 
@@ -1142,28 +1067,22 @@ function computeWqi() {
   }
 
   let totalWeight = 0;
-  let hasMissingWeight = false;
-
   for (const s of state.standards) {
-    if (s.weight === null || s.weight === undefined || Number(s.weight) <= 0) {
-      hasMissingWeight = true;
-      break;
-    }
-    totalWeight += Number(s.weight);
+    totalWeight += Number(s.weight || 1);
   }
 
-  if (hasMissingWeight || totalWeight === 0) {
-    return null;
-  }
+  if (totalWeight === 0) return null;
 
   let penaltySum = 0;
+  let evaluatedCount = 0;
 
   for (const s of state.standards) {
-    const w = Number(s.weight) / totalWeight;
+    const w = Number(s.weight || 1) / totalWeight;
     const lr = state.latestReadings.find(r => r.parameter === s.parameter);
     if (!lr || lr.value === null) {
-      return null;
+      continue;
     }
+    evaluatedCount++;
 
     const val = Number(lr.value);
     const hasMin = s.min_value !== null && s.min_value !== undefined && s.min_value !== "";
@@ -1189,6 +1108,7 @@ function computeWqi() {
     penaltySum += w * q;
   }
 
+  if (evaluatedCount === 0) return null;
   const score = Math.max(0, Math.min(100, Math.round(100 - penaltySum)));
   return score;
 }
@@ -1207,7 +1127,14 @@ async function loadData() {
 
     state.settings = settingsRes.data && settingsRes.data[0] ? settingsRes.data[0] : { staleness_window_minutes: 10 };
     state.standards = standardsRes.data || [];
-    state.latestReadings = lrRes.data || [];
+
+    if (lrRes.data && Array.isArray(lrRes.data) && lrRes.data.length > 0) {
+      state.latestReadings = lrRes.data;
+    } else {
+      const psRes = await client.from("parameter_state").select("*").order("sort_order", { ascending: true });
+      state.latestReadings = psRes.data || [];
+    }
+
     state.assessment = assessRes.data && assessRes.data[0] ? assessRes.data[0] : null;
     state.recentReadings = readingsRes.data || [];
     state.incidents = incidentsRes.data || [];
@@ -1233,7 +1160,6 @@ function renderAll() {
   renderMetricsCards();
   renderTrendChart();
   renderComplianceMatrix();
-  renderScadaValve();
   renderIncidentsTable();
   renderAdminDrawer();
   populateRecordModalDropdown();
@@ -1477,55 +1403,6 @@ function renderComplianceMatrix() {
 
 document.getElementById("matrixFilter").addEventListener("change", renderComplianceMatrix);
 
-function renderScadaValve() {
-  const latestValve = state.valveEvents && state.valveEvents.length > 0 ? state.valveEvents[0] : null;
-  const badge = document.getElementById("valveStateBadge");
-  const circle = document.getElementById("pidValveCircle");
-  const pathRecharge = document.getElementById("pidFlowPathRecharge");
-  const pathBypass = document.getElementById("pidFlowPathBypass");
-
-  const overall = state.assessment ? state.assessment.overall : "unconfigured";
-  const isValveOpen = latestValve && latestValve.state === "open" && overall === "pass";
-
-  const rootStyles = getComputedStyle(document.documentElement);
-  const greenColor = rootStyles.getPropertyValue("--c-green-main").trim();
-  const redColor = rootStyles.getPropertyValue("--c-red-main").trim();
-  const borderMuted = rootStyles.getPropertyValue("--c-border-strong").trim();
-
-  if (isValveOpen) {
-    badge.className = "status-pill online";
-    badge.textContent = "OPEN (INJECTING)";
-    circle.setAttribute("fill", greenColor);
-    pathRecharge.setAttribute("stroke", greenColor);
-    pathBypass.setAttribute("stroke", borderMuted);
-  } else {
-    badge.className = "status-pill offline";
-    badge.textContent = "LOCKED (DIVERTED)";
-    circle.setAttribute("fill", redColor);
-    pathRecharge.setAttribute("stroke", borderMuted);
-    pathBypass.setAttribute("stroke", redColor);
-  }
-
-  const flowStd = state.standards.find(s => s.parameter.toLowerCase().includes("flow"));
-  const statsWrap = document.getElementById("flowStatsWrap");
-
-  if (!flowStd) {
-    statsWrap.innerHTML = '<div class="empty-cell" style="padding:12px; width:100%;">Flow metering standard not configured in database.</div>';
-  } else {
-    const lr = state.latestReadings.find(r => r.parameter === flowStd.parameter);
-    const rateVal = lr && lr.value !== null ? formatNum(lr.value) : "0";
-    statsWrap.innerHTML = `
-      <div class="flow-stat-item">
-        <span class="flow-stat-label">Injection Rate</span>
-        <span class="flow-stat-val">${escapeHtml(rateVal)} ${escapeHtml(flowStd.unit || 'L/min')}</span>
-      </div>
-      <div class="flow-stat-item">
-        <span class="flow-stat-label">Telemetry Status</span>
-        <span class="flow-stat-val">${isValveOpen ? 'ACTIVE' : 'DIVERTED'}</span>
-      </div>
-    `;
-  }
-}
 
 function renderIncidentsTable() {
   const tbody = document.getElementById("incidentsTableBody");
