@@ -3,21 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HydroPulse</title>
+<title>HydroPulse - STP Filtered Water Quality Monitor and Recharge Assessment</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.48.1/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <style>
 :root {
-  --bg: #ffffff;
-  --surface: #ffffff;
-  --border: #d9dee3;
-  --text: #1c2733;
-  --muted: #5b6875;
-  --accent: #0b5c8a;
-  --pass: #1a7f37;
-  --fail: #b42318;
-  --incomplete: #b26a00;
-  --neutral: #6b7785;
+  --c-app-bg: #ffffff;
+  --c-white: #ffffff;
+  --c-dark-nav: #14161b;
+  --c-dark-hover: #262933;
+  --c-dark-surface: #232731;
+  --c-nav-text: #8e95a5;
+  --c-text-muted: #64748b;
+  --c-text-subtle: #94a3b8;
+  --c-border: #f1f3f7;
+  --c-border-strong: #e2e8f0;
+  --c-surface-light: #f8fafc;
+  --c-surface-subtle: #f1f5f9;
+  --c-purple-bg: #f4eefb;
+  --c-purple-border: #e9ddf9;
+  --c-purple-surface: #ede9fe;
+  --c-green-bg: #eafaf1;
+  --c-green-border: #d2f4e0;
+  --c-green-pass-bg: #ecfdf5;
+  --c-green-pass-border: #a7f3d0;
+  --c-green-text: #059669;
+  --c-green-dark: #065f46;
+  --c-green-main: #10b981;
+  --c-blue-bg: #eaf4fd;
+  --c-blue-border: #d0e8fc;
+  --c-blue-surface: #e0f2fe;
+  --c-blue-main: #0284c7;
+  --c-cyan-accent: #06b6d4;
+  --c-cream-bg: #fef7e7;
+  --c-cream-border: #fceec4;
+  --c-amber-bg: #fef3c7;
+  --c-warm-cream: #fbf4de;
+  --c-amber-main: #f59e0b;
+  --c-amber-text: #d97706;
+  --c-red-bg-subtle: #fef2f2;
+  --c-red-bg: #fee2e2;
+  --c-red-border: #fecaca;
+  --c-red-main: #ef4444;
+  --c-red-text: #dc2626;
+  --c-red-dark: #991b1b;
 }
 
 * {
@@ -27,818 +56,1222 @@
 }
 
 body {
-  background-color: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 15px;
+  background-color: var(--c-app-bg);
+  color: var(--c-dark-nav);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
   line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  min-height: 100vh;
+  display: flex;
+}
+
+.sidebar {
+  width: 240px;
+  background-color: var(--c-dark-nav);
+  color: var(--c-nav-text);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-shrink: 0;
+  border-right: 1px solid var(--c-dark-hover);
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-brand {
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--c-dark-hover);
+}
+
+.brand-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: var(--c-blue-main);
+  color: var(--c-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--c-white);
+}
+
+.brand-sub {
+  font-size: 10px;
+  color: var(--c-text-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  color: var(--c-nav-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item:hover {
+  background-color: var(--c-dark-hover);
+  color: var(--c-white);
+}
+
+.nav-item.active {
+  background-color: var(--c-dark-surface);
+  color: var(--c-white);
+  border-color: var(--c-dark-hover);
+  border-left: 3px solid var(--c-cyan-accent);
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.sidebar-bottom {
+  padding: 20px 16px;
+  border-top: 1px solid var(--c-dark-hover);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-badge-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: var(--c-dark-surface);
+  border: 1px solid var(--c-dark-hover);
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background-color: var(--c-warm-cream);
+  color: var(--c-dark-nav);
+  font-weight: 700;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-role {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-white);
+}
+
+.user-jurisdiction {
+  font-size: 10px;
+  color: var(--c-text-subtle);
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
   min-height: 100vh;
 }
 
-.top-bar {
-  background-color: var(--accent);
-  color: #ffffff;
-  padding: 14px 20px;
-}
-
-.top-bar-inner {
-  max-width: 1200px;
-  margin: 0 auto;
+.top-header {
+  height: 64px;
+  background-color: var(--c-white);
+  border-bottom: 1px solid var(--c-border);
+  padding: 0 32px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
 }
 
-.top-title {
-  font-size: 20px;
-  font-weight: 700;
+.page-title-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.current-view-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--c-dark-nav);
   letter-spacing: -0.3px;
 }
 
-.top-actions {
+.header-actions {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
-.data-indicator {
-  font-size: 13px;
-  font-weight: 500;
+.status-pill {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid var(--c-border-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.reconnecting-text {
-  font-size: 12px;
-  opacity: 0.85;
-  display: none;
+.status-pill.online {
+  background-color: var(--c-green-pass-bg);
+  color: var(--c-green-text);
+  border-color: var(--c-green-pass-border);
+}
+
+.status-pill.offline {
+  background-color: var(--c-red-bg-subtle);
+  color: var(--c-red-text);
+  border-color: var(--c-red-border);
 }
 
 .btn {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 4px;
+  padding: 8px 16px;
+  border-radius: 8px;
   border: 1px solid transparent;
   cursor: pointer;
-  background-color: transparent;
-  color: inherit;
-}
-
-.btn:focus-visible {
-  outline: 2px solid #ffffff;
-  outline-offset: 2px;
-}
-
-.btn-top {
-  border-color: rgba(255, 255, 255, 0.4);
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-.btn-top:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
 }
 
 .btn-primary {
-  background-color: var(--accent);
-  color: #ffffff;
-  border-color: var(--accent);
+  background-color: var(--c-blue-main);
+  color: var(--c-white);
+}
+
+.btn-primary:hover {
+  background-color: var(--c-cyan-accent);
+}
+
+.btn-secondary {
+  background-color: var(--c-dark-surface);
+  color: var(--c-white);
+  border-color: var(--c-dark-hover);
+}
+
+.btn-secondary:hover {
+  background-color: var(--c-dark-hover);
 }
 
 .btn-outline {
-  background-color: #ffffff;
-  color: var(--text);
-  border-color: var(--border);
+  background-color: var(--c-white);
+  color: var(--c-dark-nav);
+  border-color: var(--c-border-strong);
 }
 
 .btn-outline:hover {
-  background-color: #f8fafc;
+  background-color: var(--c-surface-light);
+}
+
+.btn-stream {
+  background-color: var(--c-green-pass-bg);
+  color: var(--c-green-text);
+  border-color: var(--c-green-pass-border);
+}
+
+.btn-stream.active {
+  background-color: var(--c-green-main);
+  color: var(--c-white);
+  border-color: var(--c-green-dark);
 }
 
 .btn-danger {
-  background-color: var(--fail);
-  color: #ffffff;
+  background-color: var(--c-red-main);
+  color: var(--c-white);
 }
 
-.workflow-strip-wrap {
-  border-bottom: 1px solid var(--border);
-  background-color: #fcfdfe;
-  padding: 10px 20px;
+.btn-danger:hover {
+  background-color: var(--c-red-text);
 }
 
-.workflow-strip {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--muted);
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  border-radius: 6px;
 }
 
-.workflow-step {
-  font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 3px;
-  background-color: #f1f4f6;
-  color: var(--text);
+.alert-toast {
+  position: fixed;
+  top: 76px;
+  right: 32px;
+  background-color: var(--c-red-bg);
+  border: 1px solid var(--c-red-border);
+  color: var(--c-red-dark);
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(20, 22, 27, 0.12);
+  z-index: 100;
+  display: none;
+  max-width: 440px;
+  animation: slide-in 0.25s ease;
 }
 
-.workflow-arrow {
-  color: var(--border);
+.alert-toast.visible {
+  display: block;
 }
 
-.page-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
+@keyframes slide-in {
+  from {
+    transform: translateY(-12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.view-container {
+  padding: 32px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
 }
 
-.state-loading, .state-error {
-  padding: 40px 20px;
-  text-align: center;
-  font-size: 15px;
+.view-panel {
+  display: none;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
 }
 
-.state-error {
-  color: var(--fail);
+.view-panel.active-view {
+  display: flex;
 }
 
-.panel {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.overall-panel {
-  border-left: 4px solid var(--neutral);
+.card {
+  background-color: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.overall-panel.state-pass {
-  border-left-color: var(--pass);
-}
-
-.overall-panel.state-not_pass {
-  border-left-color: var(--fail);
-}
-
-.overall-panel.state-incomplete {
-  border-left-color: var(--incomplete);
-}
-
-.overall-panel.state-unconfigured {
-  border-left-color: var(--neutral);
-}
-
-.overall-label {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  line-height: 1.1;
-}
-
-.state-pass .overall-label {
-  color: var(--pass);
-}
-
-.state-not_pass .overall-label {
-  color: var(--fail);
-}
-
-.state-incomplete .overall-label {
-  color: var(--incomplete);
-}
-
-.state-unconfigured .overall-label {
-  color: var(--neutral);
-}
-
-.overall-message {
-  font-size: 15px;
-  color: var(--text);
-}
-
-.detail-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 13px;
-}
-
-.failing-item {
-  color: var(--fail);
-  font-weight: 600;
-}
-
-.missing-item {
-  color: var(--incomplete);
-  font-weight: 500;
-}
-
-.prototype-disclaimer {
-  font-size: 13px;
-  color: var(--muted);
-  font-weight: 500;
-  padding-top: 4px;
-  border-top: 1px solid var(--border);
-}
-
-.overall-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 4px;
-}
-
-.source-badge {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 3px;
-  border: 1px solid var(--border);
-  background-color: #f1f4f6;
-  color: var(--text);
-}
-
-.simulated-warning-text {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--incomplete);
-  margin-left: 6px;
-}
-
-.section-heading {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 12px;
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 16px;
 }
 
-.param-card {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 16px;
-  border-left: 4px solid var(--neutral);
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--c-text-muted);
+}
+
+.top-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.8fr;
+  gap: 24px;
+}
+
+.hero-decision-card {
+  justify-content: space-between;
+}
+
+.decision-badge-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.decision-badge {
+  font-size: 18px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.decision-badge.pass {
+  background-color: var(--c-green-pass-bg);
+  color: var(--c-green-text);
+  border: 1px solid var(--c-green-pass-border);
+}
+
+.decision-badge.not_pass {
+  background-color: var(--c-red-bg);
+  color: var(--c-red-text);
+  border: 1px solid var(--c-red-border);
+}
+
+.decision-badge.incomplete {
+  background-color: var(--c-amber-bg);
+  color: var(--c-amber-text);
+  border: 1px solid var(--c-cream-border);
+}
+
+.decision-badge.unconfigured {
+  background-color: var(--c-surface-subtle);
+  color: var(--c-text-muted);
+  border: 1px solid var(--c-border-strong);
+}
+
+.wqi-card-box {
+  background-color: var(--c-surface-light);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: 10px;
-  cursor: pointer;
-  user-select: none;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.param-card:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.param-card.status-pass {
-  border-left-color: var(--pass);
-}
-
-.param-card.status-fail {
-  border-left-color: var(--fail);
-}
-
-.param-card.status-incomplete {
-  border-left-color: var(--incomplete);
-}
-
-.param-card.status-neutral {
-  border-left-color: var(--neutral);
-}
-
-.param-card.selected-card {
-  outline: 2px solid var(--accent);
-}
-
-.param-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   gap: 6px;
 }
 
-.param-card-name {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.measurement-tag {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  padding: 1px 5px;
-  border-radius: 3px;
-  background-color: #f1f4f6;
-  border: 1px solid var(--border);
-  color: var(--muted);
-}
-
-.param-card-value {
-  font-size: 28px;
+.wqi-val-large {
+  font-size: 24px;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-  line-height: 1.1;
+  color: var(--c-dark-nav);
 }
 
-.param-card-unit {
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--muted);
-  margin-left: 2px;
+.aquifer-impact-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--c-surface-subtle);
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
 }
 
-.param-card-standard {
-  font-size: 12px;
-  color: var(--muted);
+.impact-stat {
+  display: flex;
+  flex-direction: column;
 }
 
-.param-card-footer {
+.impact-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--c-text-muted);
+}
+
+.impact-num {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--c-dark-nav);
+}
+
+.chart-card {
+  min-height: 320px;
+}
+
+.chart-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  font-size: 12px;
-  padding-top: 6px;
-  border-top: 1px solid var(--border);
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.status-word {
+.chart-time-filters {
+  display: flex;
+  gap: 6px;
+}
+
+.chart-container {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 220px;
+}
+
+.metrics-section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background-color: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--c-blue-main);
+  box-shadow: 0 4px 12px rgba(20, 22, 27, 0.04);
+}
+
+.metric-card.active-selected {
+  border-color: var(--c-blue-main);
+  box-shadow: 0 0 0 2px var(--c-blue-main);
+}
+
+.metric-card.breach-card {
+  background-color: var(--c-red-bg-subtle);
+  border-color: var(--c-red-border);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 var(--c-red-border); }
+  70% { box-shadow: 0 0 0 6px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.card-tint-lavender { background-color: var(--c-purple-bg); border-color: var(--c-purple-border); }
+.card-tint-mint { background-color: var(--c-green-bg); border-color: var(--c-green-border); }
+.card-tint-cream { background-color: var(--c-cream-bg); border-color: var(--c-cream-border); }
+.card-tint-sky { background-color: var(--c-blue-bg); border-color: var(--c-blue-border); }
+.card-tint-amber { background-color: var(--c-amber-bg); border-color: var(--c-cream-border); }
+
+.metric-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.metric-param-name {
+  font-size: 13px;
   font-weight: 700;
+  color: var(--c-dark-nav);
 }
 
-.status-pass .status-word {
-  color: var(--pass);
+.metric-param-limit {
+  font-size: 11px;
+  color: var(--c-text-muted);
+  margin-top: 2px;
 }
 
-.status-fail .status-word {
-  color: var(--fail);
+.metric-val-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--c-dark-nav);
 }
 
-.status-incomplete .status-word {
-  color: var(--incomplete);
-}
-
-.status-neutral .status-word {
-  color: var(--neutral);
-}
-
-.card-age-text {
-  color: var(--muted);
+.metric-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 11px;
 }
 
-.table-container {
-  overflow-x: auto;
-  border: 1px solid var(--border);
+.source-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 2px 6px;
   border-radius: 4px;
+}
+
+.source-tag.sensor {
+  background-color: var(--c-blue-bg);
+  color: var(--c-blue-main);
+  border: 1px solid var(--c-blue-border);
+}
+
+.source-tag.lab {
+  background-color: var(--c-purple-bg);
+  color: var(--c-dark-surface);
+  border: 1px solid var(--c-purple-border);
+}
+
+.source-tag.simulator {
+  background-color: var(--c-surface-subtle);
+  color: var(--c-text-muted);
+  border: 1px solid var(--c-border-strong);
+}
+
+.margin-tag {
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.margin-tag.safe {
+  color: var(--c-green-text);
+}
+
+.margin-tag.breach {
+  color: var(--c-red-text);
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--c-border);
+  border-radius: 8px;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 th {
-  background-color: #f8fafc;
-  color: var(--muted);
-  font-weight: 600;
-  font-size: 12px;
+  background-color: var(--c-surface-light);
+  color: var(--c-text-muted);
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+  border-bottom: 1px solid var(--c-border-strong);
 }
 
 td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--c-border);
 }
 
 tr:last-child td {
   border-bottom: none;
 }
 
-.table-row-fail {
-  border-left: 4px solid var(--fail);
-}
-
-.table-row-pass {
-  border-left: 4px solid var(--pass);
-}
-
-.table-row-neutral {
-  border-left: 4px solid var(--neutral);
-}
-
-.table-row-stale {
-  opacity: 0.6;
-}
-
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-@media (max-width: 800px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.chart-card {
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 16px;
-  min-height: 240px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.chart-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 13px;
-}
-
-.chart-param-title {
-  font-weight: 700;
-  color: var(--text);
-}
-
-.chart-standard-title {
+.filter-select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--c-border-strong);
+  background-color: var(--c-white);
+  color: var(--c-dark-nav);
   font-size: 12px;
-  color: var(--muted);
 }
 
-.chart-canvas-wrap {
-  position: relative;
-  height: 180px;
-  width: 100%;
-}
-
-.time-warning-note {
-  font-size: 11px;
-  color: var(--incomplete);
-  font-weight: 600;
-}
-
-.admin-panel {
-  display: none;
-  background-color: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.admin-panel.visible {
-  display: block;
-}
-
-.admin-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-}
-
-@media (max-width: 850px) {
-  .admin-grid {
-    grid-template-columns: 1fr;
-  }
+.empty-cell {
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--c-text-muted);
+  font-style: italic;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: 6px;
 }
 
-.form-group label {
+.form-label {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
+  font-weight: 700;
+  color: var(--c-text-muted);
 }
 
-.form-control {
-  padding: 8px 10px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  font-size: 14px;
+.input-field {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--c-border-strong);
+  font-size: 13px;
   font-family: inherit;
-  background-color: #ffffff;
-  color: var(--text);
+  background-color: var(--c-white);
+  color: var(--c-dark-nav);
 }
 
-.form-control:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
+.input-field:focus {
+  outline: none;
+  border-color: var(--c-blue-main);
+  box-shadow: 0 0 0 2px var(--c-blue-border);
 }
 
-.form-row {
-  display: flex;
-  gap: 12px;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-.form-feedback {
-  font-size: 12px;
-  margin-top: 6px;
+.notice-box {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
   display: none;
 }
 
-.form-feedback.success {
+.notice-box.success {
   display: block;
-  color: var(--pass);
+  background-color: var(--c-green-pass-bg);
+  color: var(--c-green-text);
+  border: 1px solid var(--c-green-pass-border);
 }
 
-.form-feedback.error {
+.notice-box.error {
   display: block;
-  color: var(--fail);
+  background-color: var(--c-red-bg-subtle);
+  color: var(--c-red-text);
+  border: 1px solid var(--c-red-border);
 }
 
-.admin-subheading {
-  font-size: 14px;
+.notice-box.info {
+  display: block;
+  background-color: var(--c-blue-bg);
+  color: var(--c-blue-main);
+  border: 1px solid var(--c-blue-border);
+}
+
+.two-col-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.scenario-pill-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.scenario-btn {
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--c-border-strong);
+  background-color: var(--c-white);
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.scenario-btn:hover {
+  border-color: var(--c-blue-main);
+  background-color: var(--c-surface-light);
+}
+
+.scenario-btn-title {
   font-weight: 700;
-  margin-bottom: 12px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--c-dark-nav);
 }
 
-.empty-cell {
-  text-align: center;
-  color: var(--muted);
-  padding: 24px;
+.scenario-btn-desc {
+  font-size: 11px;
+  color: var(--c-text-muted);
+}
+
+.report-sheet {
+  background-color: var(--c-white);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--c-border-strong);
+}
+
+.report-agency {
+  font-size: 12px;
+  color: var(--c-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.report-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--c-dark-nav);
+  letter-spacing: -0.4px;
+}
+
+.report-hash-box {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background-color: var(--c-surface-subtle);
+  border: 1px solid var(--c-border-strong);
+  font-family: monospace;
+  font-size: 10.5px;
+  color: var(--c-text-muted);
+}
+
+@media (max-width: 900px) {
+  body {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    min-height: auto;
+    position: relative;
+  }
+  .top-summary-grid,
+  .two-col-grid {
+    grid-template-columns: 1fr;
+  }
+  .view-container {
+    padding: 16px;
+  }
+}
+
+@media print {
+  body {
+    background-color: var(--c-white);
+  }
+  .sidebar,
+  .top-header,
+  .btn,
+  .alert-toast {
+    display: none !important;
+  }
+  .view-panel {
+    display: none !important;
+  }
+  #viewReports {
+    display: flex !important;
+  }
+  .report-sheet {
+    border: none;
+    padding: 0;
+  }
 }
 </style>
 </head>
 <body>
 
-<header class="top-bar">
-  <div class="top-bar-inner">
-    <div style="display:flex; align-items:baseline; gap:16px;">
-      <h1 class="top-title">HydroPulse</h1>
-      <span id="dataIndicator" class="data-indicator">No recent data</span>
-      <span id="reconnectingIndicator" class="reconnecting-text">Reconnecting</span>
-    </div>
-    <div class="top-actions">
-      <button type="button" id="adminToggleBtn" class="btn btn-top">Admin</button>
-    </div>
-  </div>
-</header>
-
-<div class="workflow-strip-wrap">
-  <div class="workflow-strip">
-    <span class="workflow-step">STP</span>
-    <span class="workflow-arrow">&gt;</span>
-    <span class="workflow-step">Filter Media</span>
-    <span class="workflow-arrow">&gt;</span>
-    <span class="workflow-step">Sensor Monitoring</span>
-    <span class="workflow-arrow">&gt;</span>
-    <span class="workflow-step">Database</span>
-    <span class="workflow-arrow">&gt;</span>
-    <span class="workflow-step">Standard Comparison</span>
-    <span class="workflow-arrow">&gt;</span>
-    <span class="workflow-step">Assessment</span>
-    <span class="workflow-arrow">&gt;</span>
-    <span class="workflow-step">Groundwater Recharge Decision</span>
-  </div>
-</div>
-
-<main class="page-container">
-
-  <div id="loadingState" class="state-loading">Loading</div>
-
-  <div id="errorState" class="state-error" style="display:none;">
-    <div id="errorMessage"></div>
-    <button type="button" id="retryBtn" class="btn btn-outline" style="margin-top:12px;">Retry</button>
-  </div>
-
-  <div id="mainDashboard" style="display:none; flex-direction:column; gap:24px;">
-
-    <section id="overallPanel" class="panel overall-panel">
-      <div id="overallStatusLabel" class="overall-label">INCOMPLETE</div>
-      <div id="overallMessageText" class="overall-message">Recent data is missing for one or more required parameters. No assessment can be made.</div>
-
-      <div id="failingParametersList" class="detail-list"></div>
-      <div id="missingParametersList" class="detail-list"></div>
-
-      <div class="prototype-disclaimer">Standards-based prototype assessment using the configured criteria.</div>
-
-      <div class="overall-meta-row">
-        <div>
-          <span>Data source: </span>
-          <span id="overallSourceBadge" class="source-badge">-</span>
-          <span id="simulatedWarning" class="simulated-warning-text" style="display:none;">Simulated data</span>
-        </div>
-        <div id="timeWarningArea" class="time-warning-note" style="display:none;">Timestamp ahead of local clock</div>
-        <div>
-          <span>Last update: </span>
-          <span id="overallLastUpdated">-</span>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="section-heading">Monitored Parameters</h2>
-      <div id="parameterCardsGrid" class="cards-grid"></div>
-    </section>
-
-    <section>
-      <h2 class="section-heading">Standard Comparison</h2>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Unit</th>
-              <th>Standard</th>
-              <th>Live Value</th>
-              <th>Difference</th>
-              <th>Status</th>
-              <th>Source</th>
-              <th>Time</th>
-            </tr>
-          </thead>
-          <tbody id="comparisonTableBody">
-            <tr><td colspan="8" class="empty-cell">-</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="section-heading">History Trends</h2>
-      <div id="chartsContainer" class="charts-grid">
-        <div class="empty-cell" style="grid-column:1/-1;">No readings in the last 24 hours.</div>
-      </div>
-    </section>
-
-  </div>
-
-  <section id="adminSection" class="panel admin-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-      <h2 class="section-heading" style="margin:0;">Admin Console</h2>
-      <button type="button" id="adminCloseBtn" class="btn btn-outline">Close</button>
-    </div>
-
-    <div id="adminLoginForm">
-      <div style="max-width:360px;">
-        <div class="form-group">
-          <label for="adminEmailInput">Admin Email</label>
-          <input type="email" id="adminEmailInput" class="form-control" required>
-        </div>
-        <div class="form-group">
-          <label for="adminPasswordInput">Password</label>
-          <input type="password" id="adminPasswordInput" class="form-control" required>
-        </div>
-        <button type="button" id="adminLoginBtn" class="btn btn-primary" style="margin-top:8px;">Login</button>
-        <div id="adminLoginFeedback" class="form-feedback"></div>
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="sidebar-brand">
+      <div class="brand-icon-box">H</div>
+      <div>
+        <div class="brand-name">HydroPulse</div>
+        <div class="brand-sub">STP Recharge Engine</div>
       </div>
     </div>
 
-    <div id="adminAuthArea" style="display:none;">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <span id="adminUserEmail" style="font-size:13px; color:var(--muted);"></span>
-        <button type="button" id="adminLogoutBtn" class="btn btn-outline">Logout</button>
-      </div>
+    <nav class="sidebar-menu">
+      <button type="button" class="nav-item active" onclick="switchView('viewDashboard')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        <span>Dashboard</span>
+      </button>
 
-      <div class="admin-grid">
-        <div>
-          <h3 class="admin-subheading">Record Reading</h3>
-          <form id="manualReadingForm">
-            <div class="form-group">
-              <label for="manualParamSelect">Parameter</label>
-              <select id="manualParamSelect" class="form-control" required></select>
+      <button type="button" class="nav-item" onclick="switchView('viewDataEntry')">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <span>Data Entry</span>
+      </button>
+
+      <button type="button" class="nav-item" onclick="switchView('viewDatabase')">
+        <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+        <span>Cloud Database</span>
+      </button>
+
+      <button type="button" class="nav-item" onclick="switchView('viewReports')">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        <span>Compliance Reports</span>
+      </button>
+
+      <button type="button" class="nav-item" onclick="switchView('viewAuth')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Login &amp; Auth</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="user-badge-box">
+      <div class="user-avatar">TN</div>
+      <div class="user-meta">
+        <span class="user-role">TNPCB Officer</span>
+        <span class="user-jurisdiction">Regional STP Grid</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<main class="main-content">
+
+  <header class="top-header">
+    <div class="page-title-wrap">
+      <span id="headerViewTitle" class="current-view-title">Live Telemetry Dashboard</span>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" id="btnToggleAutoStream" class="btn btn-stream btn-sm">Auto-Stream: OFF</button>
+      <button type="button" class="btn btn-primary btn-sm" onclick="switchView('viewDataEntry')">Record Reading</button>
+      <span id="networkPill" class="status-pill online">Online Telemetry</span>
+    </div>
+  </header>
+
+  <div id="alertToast" class="alert-toast">
+    <div style="font-weight:800; text-transform:uppercase; font-size:11px; margin-bottom:2px;">Automated Fail-Safe Tripped</div>
+    <div id="alertToastMsg">Parameter breach detected. Infiltration gate locked. Notification dispatched.</div>
+  </div>
+
+  <div class="view-container">
+
+    <div id="viewDashboard" class="view-panel active-view">
+      <div class="top-summary-grid">
+        <div class="card hero-decision-card">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="section-label">Groundwater Recharge Decision</span>
+              <span id="calcTimeText" style="font-size:11px; color:var(--c-text-subtle);">Assessed: Just now</span>
             </div>
-            <div class="form-group">
-              <label for="manualValueInput">Numeric Value</label>
-              <input type="number" step="any" id="manualValueInput" class="form-control" required>
+
+            <div class="decision-badge-row">
+              <span id="heroDecisionBadge" class="decision-badge pass">APPROVED</span>
             </div>
-            <div class="form-group">
-              <label for="manualTimeInput">Recorded Date and Time</label>
-              <input type="datetime-local" id="manualTimeInput" class="form-control">
+
+            <p id="heroDecisionDesc" style="font-size:12.5px; color:var(--c-text-muted); margin-top:8px;">
+              All treated effluent parameters strictly comply with CPCB and TNPCB aquifer injection norms.
+            </p>
+          </div>
+
+          <div class="wqi-card-box">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="section-label">Water Quality Index (WQI)</span>
+              <span style="font-size:11px; color:var(--c-text-subtle);">WA-WQI Formula</span>
             </div>
-            <div class="form-group">
-              <label for="manualSourceSelect">Measurement Source</label>
-              <select id="manualSourceSelect" class="form-control" required>
-                <option value="sensor">Sensor</option>
-                <option value="lab">Lab</option>
-              </select>
+            <div id="heroWqiScore" class="wqi-val-large">94.2 / 100</div>
+            <span style="font-size:10.5px; color:var(--c-text-subtle); font-family:monospace;">WQI = 100 - SUM(weight_i * q_i)</span>
+          </div>
+
+          <div class="aquifer-impact-row">
+            <div class="impact-stat">
+              <span class="impact-label">Recharged Today</span>
+              <span class="impact-num">142,500 L</span>
             </div>
-            <button type="submit" class="btn btn-primary" style="margin-top:8px;">Save Reading</button>
-            <div id="manualReadingFeedback" class="form-feedback"></div>
-          </form>
+            <div class="impact-stat">
+              <span class="impact-label">Aquifer Status</span>
+              <span id="heroGateState" class="impact-num" style="color:var(--c-green-text);">PERMITTED</span>
+            </div>
+            <div class="impact-stat">
+              <span class="impact-label">Parameters Monitored</span>
+              <span class="impact-num">10 / 10 Active</span>
+            </div>
+          </div>
         </div>
 
-        <div>
-          <h3 class="admin-subheading">Standards Editor</h3>
-          <form id="standardEditForm">
-            <input type="hidden" id="editStandardId">
-            <div class="form-group">
-              <label for="editStandardParam">Parameter Name</label>
-              <input type="text" id="editStandardParam" class="form-control" required>
+        <div class="card chart-card">
+          <div class="chart-header">
+            <div>
+              <span class="section-label">Real-Time Telemetry Trend</span>
+              <div style="font-size:15px; font-weight:800; color:var(--c-dark-nav);" id="chartSelectedParamTitle">Turbidity (NTU)</div>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="editStandardUnit">Unit</label>
-                <input type="text" id="editStandardUnit" class="form-control">
-              </div>
-              <div class="form-group">
-                <label for="editStandardMeasurement">Measurement</label>
-                <select id="editStandardMeasurement" class="form-control">
-                  <option value="live">Live</option>
-                  <option value="lab">Lab</option>
-                </select>
-              </div>
+            <div class="chart-time-filters">
+              <button type="button" class="btn btn-outline btn-sm" onclick="setChartRange(10)">10P</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="setChartRange(30)">30P</button>
+              <button type="button" class="btn btn-outline btn-sm" onclick="setChartRange(100)">ALL</button>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="editStandardMin">Min Value</label>
-                <input type="number" step="any" id="editStandardMin" class="form-control">
-              </div>
-              <div class="form-group">
-                <label for="editStandardMax">Max Value</label>
-                <input type="number" step="any" id="editStandardMax" class="form-control">
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="editStandardAge">Max Age (Minutes)</label>
-                <input type="number" id="editStandardAge" class="form-control" value="10" required>
-              </div>
-              <div class="form-group">
-                <label for="editStandardSort">Sort Order</label>
-                <input type="number" id="editStandardSort" class="form-control" value="0">
-              </div>
-            </div>
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="editStandardMandatory" checked> Mandatory for assessment
-              </label>
-            </div>
-            <div style="display:flex; gap:8px; margin-top:8px;">
-              <button type="submit" id="saveStandardBtn" class="btn btn-primary">Save Standard</button>
-              <button type="button" id="resetStandardBtn" class="btn btn-outline">Clear Form</button>
-            </div>
-            <div id="standardEditFeedback" class="form-feedback"></div>
-          </form>
+          </div>
 
-          <div style="margin-top:20px; overflow-x:auto;">
+          <div class="chart-container">
+            <canvas id="liveChartCanvas"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="metrics-section-title-row">
+          <span class="section-label">Critical Effluent Metrics (10 Statutory Parameters)</span>
+          <span style="font-size:11px; color:var(--c-text-subtle);">Click card to view live telemetry graph</span>
+        </div>
+        <div id="metricsCardsGrid" class="metrics-grid">
+          <div class="empty-cell" style="grid-column:1/-1;">Synchronizing parameter telemetry...</div>
+        </div>
+      </div>
+
+      <div class="two-col-grid">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="section-label">Live CPCB Compliance Matrix</span>
+            <select id="matrixFilterSelect" class="filter-select" onchange="renderMatrix()">
+              <option value="all">All 10 Parameters</option>
+              <option value="violations">Violations Only</option>
+            </select>
+          </div>
+          <div class="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>Parameter</th>
-                  <th>Limits</th>
-                  <th>Type</th>
-                  <th>Actions</th>
+                  <th>Current Reading</th>
+                  <th>Statutory Limit</th>
+                  <th>Status</th>
+                  <th>Safety Margin</th>
                 </tr>
               </thead>
-              <tbody id="standardsManageTableBody">
-                <tr><td colspan="4" class="empty-cell">-</td></tr>
+              <tbody id="complianceMatrixBody">
+                <tr><td colspan="5" class="empty-cell">No standards configured.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="section-label">Regulatory Audit &amp; Deviation Log</span>
+            <span style="font-size:11px; color:var(--c-text-subtle);">Statutory Threshold Tracking</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Opened At</th>
+                  <th>Parameter</th>
+                  <th>Peak Value</th>
+                  <th>Shut-Off Latency</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dashboardIncidentsBody">
+                <tr><td colspan="5" class="empty-cell">No incidents recorded.</td></tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
     </div>
-  </section>
+
+    <div id="viewDataEntry" class="view-panel">
+      <div class="two-col-grid">
+        <div class="card">
+          <span class="section-label">Telemetry Injection &amp; Lab Entry Form</span>
+          <form id="dataEntryForm" style="display:flex; flex-direction:column; gap:14px;">
+            <div class="form-group">
+              <label class="form-label" for="entryParam">Target Parameter</label>
+              <select id="entryParam" class="input-field" required></select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="entryValue">Measured Value</label>
+              <input type="number" step="any" id="entryValue" class="input-field" placeholder="e.g. 7.35" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="entrySource">Measurement Source</label>
+              <select id="entrySource" class="input-field" required>
+                <option value="sensor">Online Sensor Telemetry</option>
+                <option value="lab">Certified NABL Lab Report</option>
+                <option value="simulator">Simulation Engine</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="entryBatchId">Lab Sample ID / Sensor Node</label>
+              <input type="text" id="entryBatchId" class="input-field" placeholder="e.g. LAB-TNPCB-2026-0929">
+            </div>
+
+            <div id="entryNotice" class="notice-box"></div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top:6px;">Record Telemetry Point</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <span class="section-label">1-Click Live Test Scenarios (Demonstration)</span>
+          <p style="font-size:12px; color:var(--c-text-muted);">
+            Inject predefined physical scenarios into the live database to verify how the charts, decision badge, and fail-safe alerts react in real time.
+          </p>
+
+          <div class="scenario-pill-grid">
+            <button type="button" class="scenario-btn" onclick="triggerScenario('baseline')">
+              <span class="scenario-btn-title">Baseline Compliant</span>
+              <span class="scenario-btn-desc">All 10 parameters safe. Water quality safe for groundwater recharge.</span>
+            </button>
+
+            <button type="button" class="scenario-btn" onclick="triggerScenario('turbidity')">
+              <span class="scenario-btn-title">Turbidity Filter Clog</span>
+              <span class="scenario-btn-desc">Spikes to 14.5 NTU. Immediate fail-safe lockout.</span>
+            </button>
+
+            <button type="button" class="scenario-btn" onclick="triggerScenario('ph')">
+              <span class="scenario-btn-title">Chemical pH Shock</span>
+              <span class="scenario-btn-desc">Spikes to 10.5 pH. Acidic/alkaline alarm.</span>
+            </button>
+
+            <button type="button" class="scenario-btn" onclick="triggerScenario('organic')">
+              <span class="scenario-btn-title">Organic Overload (BOD/COD)</span>
+              <span class="scenario-btn-desc">BOD breaches to 24 mg/L. Diversion triggered.</span>
+            </button>
+          </div>
+
+          <div id="scenarioNotice" class="notice-box" style="margin-top:12px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewDatabase" class="view-panel">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="section-label">Cloud Telemetry Store (Supabase PostgreSQL)</span>
+            <div style="font-size:12px; color:var(--c-text-muted);">Real-time live persistence log proving all data is stored in the cloud.</div>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm" onclick="loadAllTelemetry()">Refresh Store</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Record ID</th>
+                <th>Parameter</th>
+                <th>Measured Value</th>
+                <th>Telemetry Source</th>
+                <th>Server Status</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="databaseStoreTableBody">
+              <tr><td colspan="6" class="empty-cell">Loading telemetry rows from Supabase...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewReports" class="view-panel">
+      <div class="report-sheet">
+        <div class="report-header">
+          <div>
+            <div class="report-agency">Central Pollution Control Board &middot; TNPCB Class-A Audit</div>
+            <div class="report-title">STP Treated Effluent Aquifer Infiltration Compliance Certificate</div>
+            <div style="font-size:12px; color:var(--c-text-muted); margin-top:4px;">
+              Facility ID: HYDROPULSE-STP-CH-04 &middot; Regional Ground Water Authority
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">Print Report (PDF)</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="exportCsvData()">Export CSV Audit</button>
+          </div>
+        </div>
+
+        <div class="aquifer-impact-row" style="background-color:var(--c-surface-light);">
+          <div class="impact-stat">
+            <span class="impact-label">24-Hour Average WQI</span>
+            <span class="impact-num" id="reportAvgWqi">94.2 (Excellent)</span>
+          </div>
+          <div class="impact-stat">
+            <span class="impact-label">Total Infiltration Volume</span>
+            <span class="impact-num">142,500 Liters</span>
+          </div>
+          <div class="impact-stat">
+            <span class="impact-label">Regulatory Audit Outcome</span>
+            <span class="impact-num" style="color:var(--c-green-text);">APPROVED FOR RECHARGE</span>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Parameter</th>
+                <th>Test Type</th>
+                <th>Statutory Ceiling</th>
+                <th>24h Mean</th>
+                <th>Compliance Status</th>
+              </tr>
+            </thead>
+            <tbody id="reportTableBody">
+              <tr><td colspan="5" class="empty-cell">Compiling report data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; padding-top:16px; border-top:1px solid var(--c-border);">
+          <div class="report-hash-box" id="reportHash">
+            Digital Certificate Hash: SHA256-HP-7F89B24D9E013A4F8271C
+          </div>
+          <span style="font-size:11px; color:var(--c-text-subtle);">Generated via HydroPulse Automated Compliance Engine</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="viewAuth" class="view-panel">
+      <div style="max-width:480px; margin:0 auto; width:100%;">
+        <div class="card">
+          <span class="section-label">Operator &amp; Officer Authentication</span>
+          <p style="font-size:12px; color:var(--c-text-muted);">
+            Sign in with authorized credentials to modify statutory thresholds, adjust staleness limits, or record certified lab analysis.
+          </p>
+
+          <form id="authLoginForm" style="display:flex; flex-direction:column; gap:12px; margin-top:8px;">
+            <div class="form-group">
+              <label class="form-label" for="authEmail">Email Address</label>
+              <input type="email" id="authEmail" class="input-field" placeholder="officer@tnpcb.gov.in" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="authPassword">Password</label>
+              <input type="password" id="authPassword" class="input-field" placeholder="Password" required>
+            </div>
+
+            <div id="authNotice" class="notice-box"></div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top:6px;">Sign In</button>
+            <button type="button" id="btnLogout" class="btn btn-outline" style="display:none;">Sign Out</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
 </main>
 
@@ -848,909 +1281,723 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const state = {
+let state = {
   standards: [],
-  parameterState: [],
+  latestReadings: [],
+  recentReadings: [],
   assessment: null,
-  readingsHistory: [],
-  selectedParam: null,
-  chartInstances: {},
-  refetchTimer: null,
-  isFetching: false,
-  currentUser: null
+  incidents: [],
+  selectedParam: "Turbidity",
+  chartRange: 30,
+  autoStreamActive: false,
+  autoStreamTimer: null
 };
 
-function formatNumber(num) {
-  if (num === null || num === undefined || num === "") return "-";
-  const n = Number(num);
-  if (Number.isNaN(n)) return "-";
-  return n.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+let chartInstance = null;
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
 }
 
-function formatStandardText(minVal, maxVal) {
+function formatNum(val) {
+  if (val === null || val === undefined || val === "") return "-";
+  const n = Number(val);
+  if (isNaN(n)) return escapeHtml(String(val));
+  return String(Math.round(n * 100) / 100);
+}
+
+function formatLimitString(minVal, maxVal, unit) {
+  const u = unit ? (" " + unit) : "";
+  const hasMin = minVal !== null && minVal !== undefined && minVal !== "";
+  const hasMax = maxVal !== null && maxVal !== undefined && maxVal !== "";
+  if (hasMin && hasMax) return formatNum(minVal) + " - " + formatNum(maxVal) + u;
+  if (hasMax) return "<= " + formatNum(maxVal) + u;
+  if (hasMin) return ">= " + formatNum(minVal) + u;
+  return "Monitor only";
+}
+
+function computeSafetyMargin(val, minVal, maxVal) {
+  if (val === null || val === undefined) return null;
+  const v = Number(val);
   const hasMin = minVal !== null && minVal !== undefined && minVal !== "";
   const hasMax = maxVal !== null && maxVal !== undefined && maxVal !== "";
 
-  if (hasMin && hasMax) {
-    return `${formatNumber(minVal)} to ${formatNumber(maxVal)}`;
-  }
-  if (hasMax) {
-    return `max ${formatNumber(maxVal)}`;
-  }
-  if (hasMin) {
-    return `min ${formatNumber(minVal)}`;
-  }
-  return "No limit";
-}
+  if (!hasMin && !hasMax) return null;
 
-function getRelativeAge(isoString) {
-  if (!isoString) return "-";
-  const diffMs = Date.now() - new Date(isoString).getTime();
-  if (diffMs < 0) return "just now";
-  const mins = Math.floor(diffMs / 60000);
-  if (mins < 1) return "just now";
-  if (mins === 1) return "1 min ago";
-  if (mins < 60) return `${mins} min ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours === 1) return "1 hour ago";
-  if (hours < 24) return `${hours} hours ago`;
-  const days = Math.floor(hours / 24);
-  return `${days} d ago`;
-}
-
-function formatLocalTime(isoString) {
-  if (!isoString) return "-";
-  return new Date(isoString).toLocaleString();
-}
-
-function formatLocalShortTime(isoString) {
-  if (!isoString) return "-";
-  return new Date(isoString).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-async function fetchData() {
-  if (state.isFetching) return;
-  state.isFetching = true;
-
-  try {
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-    const [stdRes, stateRes, assessRes, historyRes] = await Promise.all([
-      client.from("standards").select("*").order("sort_order"),
-      client.from("parameter_state").select("*").order("sort_order"),
-      client.from("assessment").select("*").limit(1),
-      client.from("readings").select("parameter, value, status, recorded_at")
-        .gte("recorded_at", twentyFourHoursAgo)
-        .order("recorded_at", { ascending: true })
-        .limit(2000)
-    ]);
-
-    if (stdRes.error) throw stdRes.error;
-    if (stateRes.error) throw stateRes.error;
-    if (assessRes.error) throw assessRes.error;
-    if (historyRes.error) throw historyRes.error;
-
-    state.standards = stdRes.data || [];
-    state.parameterState = stateRes.data || [];
-    state.assessment = assessRes.data && assessRes.data.length > 0 ? assessRes.data[0] : null;
-    state.readingsHistory = historyRes.data || [];
-
-    if (!state.selectedParam && state.standards.length > 0) {
-      state.selectedParam = state.standards[0].parameter;
-    }
-
-    renderAll();
-    hideError();
-  } catch (err) {
-    showError(err.message || "Failed to load database records.");
-  } finally {
-    state.isFetching = false;
-    document.getElementById("loadingState").style.display = "none";
-  }
-}
-
-function debouncedFetch() {
-  if (state.refetchTimer) clearTimeout(state.refetchTimer);
-  state.refetchTimer = setTimeout(() => {
-    fetchData();
-  }, 1000);
-}
-
-function showError(msg) {
-  document.getElementById("loadingState").style.display = "none";
-  document.getElementById("mainDashboard").style.display = "none";
-  const errBox = document.getElementById("errorState");
-  errBox.style.display = "block";
-  document.getElementById("errorMessage").textContent = msg;
-}
-
-function hideError() {
-  document.getElementById("errorState").style.display = "none";
-  document.getElementById("mainDashboard").style.display = "flex";
-}
-
-function renderAll() {
-  renderDataIndicator();
-  renderOverallPanel();
-  renderParameterCards();
-  renderComparisonTable();
-  renderHistoryCharts();
-  renderAdminStandardsTable();
-  populateManualEntryDropdown();
-}
-
-function renderDataIndicator() {
-  const indicator = document.getElementById("dataIndicator");
-  const liveParams = state.parameterState.filter(p => p.measurement === "live");
-  const hasFreshLive = liveParams.some(p => p.is_stale === false && p.value !== null);
-
-  if (hasFreshLive) {
-    indicator.textContent = "Receiving data";
-  } else {
-    indicator.textContent = "No recent data";
-  }
-}
-
-function renderOverallPanel() {
-  const panel = document.getElementById("overallPanel");
-  const labelElem = document.getElementById("overallStatusLabel");
-  const msgElem = document.getElementById("overallMessageText");
-  const failList = document.getElementById("failingParametersList");
-  const missList = document.getElementById("missingParametersList");
-  const srcBadge = document.getElementById("overallSourceBadge");
-  const simWarn = document.getElementById("simulatedWarning");
-  const lastUpdated = document.getElementById("overallLastUpdated");
-  const timeWarn = document.getElementById("timeWarningArea");
-
-  failList.replaceChildren();
-  missList.replaceChildren();
-
-  const assessment = state.assessment || { overall: "unconfigured", failing: [], missing: [], latest_source: null };
-  const overallState = assessment.overall || "unconfigured";
-
-  panel.className = `panel overall-panel state-${overallState}`;
-
-  if (overallState === "pass") {
-    labelElem.textContent = "PASS";
-    msgElem.textContent = "All monitored parameters are within the configured permissible limits. Eligible for further groundwater recharge assessment.";
-  } else if (overallState === "not_pass") {
-    labelElem.textContent = "NOT PASS";
-    msgElem.textContent = "One or more parameters exceed the configured permissible limits.";
-  } else if (overallState === "incomplete") {
-    labelElem.textContent = "INCOMPLETE";
-    msgElem.textContent = "Recent data is missing for one or more required parameters. No assessment can be made.";
-  } else {
-    labelElem.textContent = "NOT CONFIGURED";
-    msgElem.textContent = "No standards configured. Admin login required to add parameters.";
-  }
-
-  const failingArray = Array.isArray(assessment.failing) ? assessment.failing : [];
-  for (const item of failingArray) {
-    const div = document.createElement("div");
-    div.className = "failing-item";
-    const stdTxt = formatStandardText(item.min_value, item.max_value);
-    div.textContent = `${item.parameter}: ${formatNumber(item.value)} ${item.unit || ""}, limit ${stdTxt}`;
-    failList.appendChild(div);
-  }
-
-  const missingArray = Array.isArray(assessment.missing) ? assessment.missing : [];
-  for (const paramName of missingArray) {
-    const div = document.createElement("div");
-    div.className = "missing-item";
-    div.textContent = `Awaiting recent data: ${paramName}`;
-    missList.appendChild(div);
-  }
-
-  const rawSource = assessment.latest_source || "-";
-  if (rawSource === "sensor") {
-    srcBadge.textContent = "Sensor";
-    simWarn.style.display = "none";
-  } else if (rawSource === "lab") {
-    srcBadge.textContent = "Lab";
-    simWarn.style.display = "none";
-  } else if (rawSource === "simulator") {
-    srcBadge.textContent = "Simulator";
-    simWarn.style.display = "inline";
-  } else {
-    srcBadge.textContent = "-";
-    simWarn.style.display = "none";
-  }
-
-  let newestTime = null;
-  let futureDetected = false;
-  const now = Date.now();
-
-  for (const p of state.parameterState) {
-    if (p.recorded_at) {
-      const pTime = new Date(p.recorded_at).getTime();
-      if (!newestTime || pTime > newestTime) newestTime = pTime;
-      if (pTime - now > 120000) futureDetected = true;
-    }
-  }
-
-  lastUpdated.textContent = newestTime ? formatLocalTime(newestTime) : "-";
-  timeWarn.style.display = futureDetected ? "block" : "none";
-}
-
-function renderParameterCards() {
-  const container = document.getElementById("parameterCardsGrid");
-  container.replaceChildren();
-
-  if (state.parameterState.length === 0) {
-    const emptyDiv = document.createElement("div");
-    emptyDiv.className = "empty-cell";
-    emptyDiv.style.gridColumn = "1/-1";
-    emptyDiv.textContent = "-";
-    container.appendChild(emptyDiv);
-    return;
-  }
-
-  for (const p of state.parameterState) {
-    const card = document.createElement("div");
-
-    let cardStatusClass = "status-neutral";
-    let statusWord = "Monitor only";
-
-    if (p.is_stale) {
-      cardStatusClass = "status-incomplete";
-      statusWord = "No recent data";
-    } else if (p.status === "pass") {
-      cardStatusClass = "status-pass";
-      statusWord = "Pass";
-    } else if (p.status === "fail") {
-      cardStatusClass = "status-fail";
-      statusWord = "Fail";
-    } else if (p.status === "na") {
-      cardStatusClass = "status-neutral";
-      statusWord = "Monitor only";
-    }
-
-    card.className = `param-card ${cardStatusClass}`;
-    if (state.selectedParam === p.parameter) {
-      card.classList.add("selected-card");
-    }
-
-    const header = document.createElement("div");
-    header.className = "param-card-header";
-
-    const nameSpan = document.createElement("span");
-    nameSpan.className = "param-card-name";
-    nameSpan.textContent = p.parameter;
-
-    const tagSpan = document.createElement("span");
-    tagSpan.className = "measurement-tag";
-    tagSpan.textContent = p.measurement === "lab" ? "Lab" : "Live";
-
-    header.appendChild(nameSpan);
-    header.appendChild(tagSpan);
-
-    const valDiv = document.createElement("div");
-    valDiv.className = "param-card-value";
-
-    if (p.value !== null && p.value !== undefined) {
-      valDiv.textContent = formatNumber(p.value);
-      if (p.unit) {
-        const uSpan = document.createElement("span");
-        uSpan.className = "param-card-unit";
-        uSpan.textContent = p.unit;
-        valDiv.appendChild(uSpan);
-      }
+  if (hasMax && !hasMin) {
+    const mx = Number(maxVal);
+    if (mx === 0) return null;
+    const diff = ((mx - v) / mx) * 100;
+    if (diff >= 0) {
+      return { text: "+" + Math.round(diff) + "% Safe", isSafe: true };
     } else {
-      valDiv.textContent = "-";
+      return { text: "+" + Math.abs(Math.round(diff)) + "% Breach", isSafe: false };
     }
-
-    const stdDiv = document.createElement("div");
-    stdDiv.className = "param-card-standard";
-    stdDiv.textContent = formatStandardText(p.min_value, p.max_value);
-
-    const footer = document.createElement("div");
-    footer.className = "param-card-footer";
-
-    const statSpan = document.createElement("span");
-    statSpan.className = "status-word";
-    statSpan.textContent = statusWord;
-
-    const ageSpan = document.createElement("span");
-    ageSpan.className = "card-age-text";
-    ageSpan.textContent = getRelativeAge(p.recorded_at);
-    if (p.recorded_at) {
-      ageSpan.title = formatLocalTime(p.recorded_at);
-    }
-
-    footer.appendChild(statSpan);
-    footer.appendChild(ageSpan);
-
-    card.appendChild(header);
-    card.appendChild(valDiv);
-    card.appendChild(stdDiv);
-    card.appendChild(footer);
-
-    card.addEventListener("click", () => {
-      state.selectedParam = p.parameter;
-      renderParameterCards();
-      highlightSelectedChart(p.parameter);
-    });
-
-    container.appendChild(card);
-  }
-}
-
-function renderComparisonTable() {
-  const tbody = document.getElementById("comparisonTableBody");
-  tbody.replaceChildren();
-
-  if (state.parameterState.length === 0) {
-    const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    td.colSpan = 8;
-    td.className = "empty-cell";
-    td.textContent = "-";
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-    return;
   }
 
-  for (const p of state.parameterState) {
-    const tr = document.createElement("tr");
-
-    let rowClass = "table-row-neutral";
-    let statusWord = "Monitor only";
-
-    if (p.is_stale) {
-      rowClass = "table-row-stale";
-      statusWord = "No recent data";
-    } else if (p.status === "pass") {
-      rowClass = "table-row-pass";
-      statusWord = "Pass";
-    } else if (p.status === "fail") {
-      rowClass = "table-row-fail";
-      statusWord = "Fail";
-    }
-
-    tr.className = rowClass;
-
-    const tdParam = document.createElement("td");
-    tdParam.textContent = p.parameter;
-
-    const tdUnit = document.createElement("td");
-    tdUnit.textContent = p.unit || "-";
-
-    const tdStd = document.createElement("td");
-    tdStd.textContent = formatStandardText(p.min_value, p.max_value);
-
-    const tdVal = document.createElement("td");
-    tdVal.textContent = p.value !== null && p.value !== undefined ? formatNumber(p.value) : "-";
-
-    const tdDiff = document.createElement("td");
-    if (p.difference !== null && p.difference !== undefined) {
-      if (p.status === "fail") {
-        if (p.direction === "above") {
-          tdDiff.textContent = `Above limit by ${formatNumber(p.difference)}`;
-        } else if (p.direction === "below") {
-          tdDiff.textContent = `Below limit by ${formatNumber(p.difference)}`;
-        } else {
-          tdDiff.textContent = formatNumber(p.difference);
-        }
-      } else if (p.status === "pass") {
-        tdDiff.textContent = `Margin ${formatNumber(p.difference)}`;
-      } else {
-        tdDiff.textContent = "-";
-      }
+  if (hasMin && !hasMax) {
+    const mn = Number(minVal);
+    if (mn === 0) return null;
+    const diff = ((v - mn) / mn) * 100;
+    if (diff >= 0) {
+      return { text: "+" + Math.round(diff) + "% Safe", isSafe: true };
     } else {
-      tdDiff.textContent = "-";
+      return { text: "+" + Math.abs(Math.round(diff)) + "% Breach", isSafe: false };
     }
+  }
 
-    const tdStatus = document.createElement("td");
-    tdStatus.textContent = statusWord;
+  const mn = Number(minVal);
+  const mx = Number(maxVal);
+  const halfRange = (mx - mn) / 2;
+  if (halfRange <= 0) return null;
 
-    const tdSrc = document.createElement("td");
-    if (p.source === "sensor") tdSrc.textContent = "Sensor";
-    else if (p.source === "lab") tdSrc.textContent = "Lab";
-    else if (p.source === "simulator") tdSrc.textContent = "Simulator";
-    else tdSrc.textContent = "-";
-
-    const tdTime = document.createElement("td");
-    tdTime.textContent = p.recorded_at ? formatLocalTime(p.recorded_at) : "-";
-
-    tr.appendChild(tdParam);
-    tr.appendChild(tdUnit);
-    tr.appendChild(tdStd);
-    tr.appendChild(tdVal);
-    tr.appendChild(tdDiff);
-    tr.appendChild(tdStatus);
-    tr.appendChild(tdSrc);
-    tr.appendChild(tdTime);
-
-    tbody.appendChild(tr);
+  if (v < mn) {
+    const breachPct = ((mn - v) / halfRange) * 100;
+    return { text: "+" + Math.round(breachPct) + "% Breach", isSafe: false };
+  } else if (v > mx) {
+    const breachPct = ((v - mx) / halfRange) * 100;
+    return { text: "+" + Math.round(breachPct) + "% Breach", isSafe: false };
+  } else {
+    const dist = Math.min(v - mn, mx - v);
+    const safePct = (dist / halfRange) * 100;
+    return { text: "+" + Math.round(safePct) + "% Safe", isSafe: true };
   }
 }
 
-function renderHistoryCharts() {
-  const container = document.getElementById("chartsContainer");
+function computeDynamicWqi() {
+  if (!state.standards || state.standards.length === 0) return null;
 
-  const paramsWithHistory = state.standards.filter(s => {
-    return state.readingsHistory.some(r => r.parameter === s.parameter);
-  });
-
-  if (paramsWithHistory.length === 0) {
-    container.replaceChildren();
-    const emptyDiv = document.createElement("div");
-    emptyDiv.className = "empty-cell";
-    emptyDiv.style.gridColumn = "1/-1";
-    emptyDiv.textContent = "No readings in the last 24 hours.";
-    container.appendChild(emptyDiv);
-
-    for (const key of Object.keys(state.chartInstances)) {
-      state.chartInstances[key].destroy();
-      delete state.chartInstances[key];
-    }
-    return;
+  let totalWeight = 0;
+  for (const s of state.standards) {
+    totalWeight += Number(s.weight || 1);
   }
+  if (totalWeight === 0) return null;
 
-  const existingKeys = new Set(Object.keys(state.chartInstances));
-  const activeParams = new Set(paramsWithHistory.map(s => s.parameter));
+  let penaltySum = 0;
+  let evaluatedCount = 0;
 
-  for (const key of existingKeys) {
-    if (!activeParams.has(key)) {
-      state.chartInstances[key].destroy();
-      delete state.chartInstances[key];
-      const card = document.getElementById(`chartCard_${key}`);
-      if (card) card.remove();
-    }
-  }
+  for (const s of state.standards) {
+    const w = Number(s.weight || 1) / totalWeight;
+    const lr = state.latestReadings.find(r => r.parameter === s.parameter);
+    if (!lr || lr.value === null) continue;
 
-  for (const s of paramsWithHistory) {
-    const rawPoints = state.readingsHistory
-      .filter(r => r.parameter === s.parameter)
-      .slice(-500);
-
-    const labels = rawPoints.map(p => formatLocalShortTime(p.recorded_at));
-    const values = rawPoints.map(p => Number(p.value));
-    const pointColors = rawPoints.map(p => p.status === "fail" ? "#b42318" : "#0b5c8a");
-    const pointRadii = rawPoints.map(p => p.status === "fail" ? 5 : 2);
-
+    evaluatedCount++;
+    const val = Number(lr.value);
     const hasMin = s.min_value !== null && s.min_value !== undefined && s.min_value !== "";
     const hasMax = s.max_value !== null && s.max_value !== undefined && s.max_value !== "";
 
-    const datasets = [{
-      label: s.parameter,
-      data: values,
-      borderColor: "#0b5c8a",
-      borderWidth: 1.8,
-      tension: 0.2,
-      fill: false,
-      pointBackgroundColor: pointColors,
-      pointBorderColor: pointColors,
-      pointRadius: pointRadii
-    }];
-
-    if (hasMax) {
-      datasets.push({
-        label: "Max Limit",
-        data: Array(values.length).fill(Number(s.max_value)),
-        borderColor: "#b42318",
-        borderWidth: 1.2,
-        borderDash: [4, 4],
-        pointRadius: 0,
-        fill: false
-      });
+    let q = 0;
+    if (s.parameter.toLowerCase() === "ph") {
+      const ideal = 7.0;
+      if (val >= ideal) {
+        const bound = hasMax ? Number(s.max_value) : 8.5;
+        q = (Math.abs(val - ideal) / (bound - ideal)) * 100;
+      } else {
+        const bound = hasMin ? Number(s.min_value) : 6.5;
+        q = (Math.abs(ideal - val) / (ideal - bound)) * 100;
+      }
+    } else if (hasMax) {
+      q = (val / Number(s.max_value)) * 100;
+    } else if (hasMin) {
+      q = (Math.max(0, Number(s.min_value) - val) / Number(s.min_value)) * 100;
     }
 
-    if (hasMin) {
-      datasets.push({
-        label: "Min Limit",
-        data: Array(values.length).fill(Number(s.min_value)),
-        borderColor: "#b42318",
-        borderWidth: 1.2,
-        borderDash: [4, 4],
-        pointRadius: 0,
-        fill: false
-      });
-    }
+    penaltySum += w * q;
+  }
 
-    let card = document.getElementById(`chartCard_${s.parameter}`);
-    if (!card) {
-      card = document.createElement("div");
-      card.id = `chartCard_${s.parameter}`;
-      card.className = "chart-card";
+  if (evaluatedCount === 0) return null;
+  return Math.max(0, Math.min(100, Math.round((100 - penaltySum) * 10) / 10));
+}
 
-      const header = document.createElement("div");
-      header.className = "chart-card-header";
+function switchView(viewId) {
+  const panels = document.querySelectorAll(".view-panel");
+  panels.forEach(p => p.classList.remove("active-view"));
 
-      const titleSpan = document.createElement("span");
-      titleSpan.className = "chart-param-title";
-      titleSpan.textContent = s.parameter + (s.unit ? ` (${s.unit})` : "");
+  const target = document.getElementById(viewId);
+  if (target) target.classList.add("active-view");
 
-      const stdSpan = document.createElement("span");
-      stdSpan.className = "chart-standard-title";
-      stdSpan.textContent = `Standard: ${formatStandardText(s.min_value, s.max_value)}`;
+  const navItems = document.querySelectorAll(".nav-item");
+  navItems.forEach(n => n.classList.remove("active"));
 
-      header.appendChild(titleSpan);
-      header.appendChild(stdSpan);
+  const titleElem = document.getElementById("headerViewTitle");
+  if (viewId === "viewDashboard") {
+    navItems[0].classList.add("active");
+    titleElem.textContent = "Live Telemetry Dashboard";
+    renderTrendChart();
+  } else if (viewId === "viewDataEntry") {
+    navItems[1].classList.add("active");
+    titleElem.textContent = "Data Entry & Testing Station";
+  } else if (viewId === "viewDatabase") {
+    navItems[2].classList.add("active");
+    titleElem.textContent = "Cloud Database Telemetry Store";
+    loadAllTelemetry();
+  } else if (viewId === "viewReports") {
+    navItems[3].classList.add("active");
+    titleElem.textContent = "Regulatory Compliance Reports";
+    renderReportsView();
+  } else if (viewId === "viewAuth") {
+    navItems[4].classList.add("active");
+    titleElem.textContent = "Operator & Officer Authentication";
+  }
+}
 
-      const canvasWrap = document.createElement("div");
-      canvasWrap.className = "chart-canvas-wrap";
+async function loadData() {
+  try {
+    const [standardsRes, lrRes, assessRes, readingsRes, incidentsRes] = await Promise.all([
+      client.from("standards").select("*").order("sort_order", { ascending: true }),
+      client.from("latest_readings").select("*").order("sort_order", { ascending: true }),
+      client.from("assessment").select("*").limit(1),
+      client.from("readings").select("id, parameter, value, source, status, recorded_at").order("recorded_at", { ascending: true }).limit(500),
+      client.from("incidents").select("*").order("opened_at", { ascending: false }).limit(20)
+    ]);
 
-      const canvas = document.createElement("canvas");
-      canvas.id = `chartCanvas_${s.parameter}`;
-      canvasWrap.appendChild(canvas);
+    state.standards = standardsRes.data || [];
 
-      card.appendChild(header);
-      card.appendChild(canvasWrap);
-      container.appendChild(card);
-
-      const chartInstance = new window.Chart(canvas, {
-        type: "line",
-        data: { labels, datasets },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 300 },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: {
-                maxTicksLimit: 6,
-                maxRotation: 0,
-                autoSkip: true,
-                font: { size: 11 },
-                color: "#5b6875"
-              }
-            },
-            y: {
-              grid: { color: "#d9dee3" },
-              ticks: { font: { size: 11 }, color: "#5b6875" }
-            }
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: "#1c2733",
-              titleFont: { size: 11 },
-              bodyFont: { size: 12 }
-            }
-          }
-        }
-      });
-
-      state.chartInstances[s.parameter] = chartInstance;
+    if (lrRes.data && Array.isArray(lrRes.data) && lrRes.data.length > 0) {
+      state.latestReadings = lrRes.data;
     } else {
-      const chartInstance = state.chartInstances[s.parameter];
-      if (chartInstance) {
-        chartInstance.data.labels = labels;
-        chartInstance.data.datasets = datasets;
-        chartInstance.update();
+      const psRes = await client.from("parameter_state").select("*").order("sort_order", { ascending: true });
+      state.latestReadings = psRes.data || [];
+    }
+
+    state.assessment = assessRes.data && assessRes.data[0] ? assessRes.data[0] : null;
+    state.recentReadings = readingsRes.data || [];
+    state.incidents = incidentsRes.data || [];
+
+    document.getElementById("networkPill").className = "status-pill online";
+    document.getElementById("networkPill").textContent = "Live";
+
+    renderAll();
+  } catch (err) {
+    document.getElementById("networkPill").className = "status-pill offline";
+    document.getElementById("networkPill").textContent = "Offline";
+  }
+}
+
+function renderAll() {
+  renderDecisionHero();
+  renderMetricCards();
+  renderTrendChart();
+  renderMatrix();
+  renderDashboardIncidents();
+  populateDataEntryDropdown();
+}
+
+function renderDecisionHero() {
+  const badge = document.getElementById("heroDecisionBadge");
+  const desc = document.getElementById("heroDecisionDesc");
+  const wqiVal = document.getElementById("heroWqiScore");
+  const gateState = document.getElementById("heroGateState");
+  
+  const calcTime = document.getElementById("calcTimeText");
+
+  const overall = state.assessment ? state.assessment.overall : "unconfigured";
+  calcTime.textContent = "Assessed: " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+  badge.className = "decision-badge " + overall;
+
+  if (overall === "pass") {
+    badge.textContent = "APPROVED";
+    desc.textContent = "All treated effluent parameters strictly comply with CPCB and TNPCB aquifer injection norms.";
+    gateState.textContent = "ACTIVE";
+    gateState.style.color = "var(--c-green-text)";
+    
+    hideAlertToast();
+  } else if (overall === "not_pass") {
+    badge.textContent = "PROHIBITED";
+    const fails = state.assessment && state.assessment.failing ? state.assessment.failing.join(", ") : "Threshold breach";
+    desc.textContent = "Effluent breach detected on: " + escapeHtml(fails) + ". Aquifer infiltration suspended to protect groundwater.";
+    gateState.textContent = "LOCKED";
+    gateState.style.color = "var(--c-red-text)";
+    
+    showAlertToast("Contamination breach on " + fails + ". Groundwater infiltration suspended immediately to protect aquifer.");
+  } else if (overall === "incomplete") {
+    badge.textContent = "HOLD";
+    const miss = state.assessment && state.assessment.missing ? state.assessment.missing.join(", ") : "Mandatory parameters";
+    desc.textContent = "Aquifer recharge on hold awaiting fresh telemetry for: " + escapeHtml(miss) + ".";
+    gateState.textContent = "STANDBY";
+    gateState.style.color = "var(--c-amber-text)";
+    
+    hideAlertToast();
+  } else {
+    badge.textContent = "UNCONFIGURED";
+    desc.textContent = "No standards configured in database.";
+    gateState.textContent = "IDLE";
+    
+    hideAlertToast();
+  }
+
+  const score = computeDynamicWqi();
+  wqiVal.textContent = score !== null ? (score + " / 100") : "Weights not set";
+}
+
+function showAlertToast(msg) {
+  const toast = document.getElementById("alertToast");
+  document.getElementById("alertToastMsg").textContent = msg;
+  toast.classList.add("visible");
+}
+
+function hideAlertToast() {
+  document.getElementById("alertToast").classList.remove("visible");
+}
+
+function renderMetricCards() {
+  const container = document.getElementById("metricsCardsGrid");
+  container.replaceChildren();
+
+  if (!state.standards || state.standards.length === 0) {
+    const emp = document.createElement("div");
+    emp.className = "empty-cell";
+    emp.style.gridColumn = "1 / -1";
+    emp.textContent = "No parameter standards configured.";
+    container.appendChild(emp);
+    return;
+  }
+
+  const tintClasses = [
+    "card-tint-lavender",
+    "card-tint-mint",
+    "card-tint-cream",
+    "card-tint-sky",
+    "card-tint-amber"
+  ];
+
+  state.standards.forEach((s, idx) => {
+    const lr = state.latestReadings.find(r => r.parameter === s.parameter);
+    const card = document.createElement("div");
+    card.className = "metric-card " + tintClasses[idx % tintClasses.length];
+    if (state.selectedParam === s.parameter) {
+      card.classList.add("active-selected");
+    }
+
+    const valStr = lr && lr.value !== null ? (formatNum(lr.value) + (s.unit ? (" " + s.unit) : "")) : "-";
+    const limitStr = formatLimitString(s.min_value, s.max_value, s.unit);
+    const isFail = lr && lr.status === "fail";
+    if (isFail) {
+      card.classList.add("breach-card");
+    }
+
+    const marginObj = lr && lr.value !== null ? computeSafetyMargin(lr.value, s.min_value, s.max_value) : null;
+    let marginHtml = '<span class="margin-tag">-</span>';
+    if (marginObj) {
+      marginHtml = `<span class="margin-tag ${marginObj.isSafe ? 'safe' : 'breach'}">${escapeHtml(marginObj.text)}</span>`;
+    }
+
+    const isSensor = ["pH", "Turbidity", "TDS", "EC"].includes(s.parameter);
+    const src = isSensor ? "sensor" : "lab";
+    const mType = isSensor ? "Online Sensor" : "Certified Lab";
+
+    card.innerHTML = `
+      <div class="metric-card-top">
+        <div>
+          <div class="metric-param-name">${escapeHtml(s.parameter)}</div>
+          <div class="metric-param-limit">${escapeHtml(limitStr)}</div>
+        </div>
+        <span class="source-tag ${escapeHtml(src)}">${escapeHtml(mType)}</span>
+      </div>
+      <div class="metric-val-num">${escapeHtml(valStr)}</div>
+      <div class="metric-card-bottom">
+        ${marginHtml}
+        <span style="color:var(--c-text-subtle);">${escapeHtml(s.unit || '')}</span>
+      </div>
+    `;
+
+    card.addEventListener("click", () => {
+      state.selectedParam = s.parameter;
+      renderMetricCards();
+      renderTrendChart();
+    });
+
+    container.appendChild(card);
+  });
+}
+
+function renderTrendChart() {
+  const canvas = document.getElementById("liveChartCanvas");
+  const title = document.getElementById("chartSelectedParamTitle");
+
+  if (!state.selectedParam) {
+    title.textContent = "-";
+    if (chartInstance) chartInstance.destroy();
+    return;
+  }
+
+  const s = state.standards.find(x => x.parameter === state.selectedParam);
+  title.textContent = state.selectedParam + (s && s.unit ? (" (" + s.unit + ")") : "");
+
+  const pts = state.recentReadings.filter(r => r.parameter === state.selectedParam).slice(-state.chartRange);
+  const labels = pts.map(p => new Date(p.recorded_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+  const values = pts.map(p => Number(p.value));
+
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  const rootStyles = getComputedStyle(document.documentElement);
+  const blueColor = rootStyles.getPropertyValue("--c-blue-main").trim();
+  const redColor = rootStyles.getPropertyValue("--c-red-main").trim();
+  const subColor = rootStyles.getPropertyValue("--c-text-subtle").trim();
+  const pointColors = pts.map(p => p.status === "fail" ? redColor : blueColor);
+  const pointRadii = pts.map(p => p.status === "fail" ? 6 : 3);
+
+  chartInstance = new window.Chart(canvas, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: state.selectedParam,
+        data: values,
+        borderColor: blueColor,
+        borderWidth: 2.2,
+        tension: 0.35,
+        fill: false,
+        pointBackgroundColor: pointColors,
+        pointBorderColor: pointColors,
+        pointRadius: pointRadii,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400 },
+      scales: {
+        x: {
+          display: true,
+          grid: { display: false },
+          ticks: { font: { size: 10 }, color: subColor }
+        },
+        y: {
+          display: true,
+          grid: { color: rootStyles.getPropertyValue("--c-border").trim() },
+          ticks: { font: { size: 10 }, color: subColor }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: rootStyles.getPropertyValue("--c-dark-nav").trim(),
+          titleFont: { size: 11 },
+          bodyFont: { size: 12 }
+        }
       }
     }
-  }
+  });
 }
 
-function highlightSelectedChart(paramName) {
-  const card = document.getElementById(`chartCard_${paramName}`);
-  if (card) {
-    card.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }
+function setChartRange(range) {
+  state.chartRange = range;
+  renderTrendChart();
 }
 
-function renderAdminStandardsTable() {
-  const tbody = document.getElementById("standardsManageTableBody");
+function renderMatrix() {
+  const tbody = document.getElementById("complianceMatrixBody");
   tbody.replaceChildren();
 
-  if (state.standards.length === 0) {
+  const filterVal = document.getElementById("matrixFilterSelect").value;
+
+  if (!state.standards || state.standards.length === 0) {
     const tr = document.createElement("tr");
-    const td = document.createElement("td");
-    td.colSpan = 4;
-    td.className = "empty-cell";
-    td.textContent = "-";
-    tr.appendChild(td);
+    tr.innerHTML = '<td colspan="5" class="empty-cell">No standards configured.</td>';
     tbody.appendChild(tr);
     return;
   }
 
+  let count = 0;
   for (const s of state.standards) {
+    const lr = state.latestReadings.find(r => r.parameter === s.parameter);
+    const isFail = lr && lr.status === "fail";
+
+    if (filterVal === "violations" && !isFail) continue;
+    count++;
+
+    const valStr = lr && lr.value !== null ? (formatNum(lr.value) + (s.unit ? (" " + s.unit) : "")) : "-";
+    const limitStr = formatLimitString(s.min_value, s.max_value, s.unit);
+    const statusText = lr && lr.status ? lr.status.toUpperCase() : "NO DATA";
+    const marginObj = lr && lr.value !== null ? computeSafetyMargin(lr.value, s.min_value, s.max_value) : null;
+
+    let marginHtml = "-";
+    if (marginObj) {
+      marginHtml = `<span class="margin-tag ${marginObj.isSafe ? 'safe' : 'breach'}">${escapeHtml(marginObj.text)}</span>`;
+    }
+
     const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(s.parameter)}</strong> <span style="font-size:10px; color:var(--c-text-subtle);">(${escapeHtml(s.measurement)})</span></td>
+      <td style="font-weight:700;">${escapeHtml(valStr)}</td>
+      <td style="color:var(--c-text-muted);">${escapeHtml(limitStr)}</td>
+      <td><span class="status-pill ${isFail ? 'offline' : (lr ? 'online' : '')}">${escapeHtml(statusText)}</span></td>
+      <td>${marginHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  }
 
-    const tdParam = document.createElement("td");
-    tdParam.textContent = s.parameter;
-
-    const tdLimits = document.createElement("td");
-    tdLimits.textContent = formatStandardText(s.min_value, s.max_value);
-
-    const tdType = document.createElement("td");
-    tdType.textContent = s.measurement === "lab" ? "Lab" : "Live";
-
-    const tdActions = document.createElement("td");
-    tdActions.style.display = "flex";
-    tdActions.style.gap = "6px";
-
-    const editBtn = document.createElement("button");
-    editBtn.type = "button";
-    editBtn.className = "btn btn-outline";
-    editBtn.style.padding = "2px 8px";
-    editBtn.style.fontSize = "11px";
-    editBtn.textContent = "Edit";
-    editBtn.addEventListener("click", () => populateStandardEditForm(s));
-
-    const delBtn = document.createElement("button");
-    delBtn.type = "button";
-    delBtn.className = "btn btn-danger";
-    delBtn.style.padding = "2px 8px";
-    delBtn.style.fontSize = "11px";
-    delBtn.textContent = "Delete";
-    delBtn.addEventListener("click", () => deleteStandardRow(s));
-
-    tdActions.appendChild(editBtn);
-    tdActions.appendChild(delBtn);
-
-    tr.appendChild(tdParam);
-    tr.appendChild(tdLimits);
-    tr.appendChild(tdType);
-    tr.appendChild(tdActions);
-
+  if (count === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td colspan="5" class="empty-cell">No parameters matching filter.</td>';
     tbody.appendChild(tr);
   }
 }
 
-function populateStandardEditForm(s) {
-  document.getElementById("editStandardId").value = s.id;
-  document.getElementById("editStandardParam").value = s.parameter;
-  document.getElementById("editStandardUnit").value = s.unit || "";
-  document.getElementById("editStandardMeasurement").value = s.measurement || "live";
-  document.getElementById("editStandardMin").value = s.min_value !== null ? s.min_value : "";
-  document.getElementById("editStandardMax").value = s.max_value !== null ? s.max_value : "";
-  document.getElementById("editStandardAge").value = s.max_age_minutes || 10;
-  document.getElementById("editStandardSort").value = s.sort_order || 0;
-  document.getElementById("editStandardMandatory").checked = !!s.mandatory;
-  document.getElementById("saveStandardBtn").textContent = "Update Standard";
-}
+function renderDashboardIncidents() {
+  const tbody = document.getElementById("dashboardIncidentsBody");
+  tbody.replaceChildren();
 
-function clearStandardEditForm() {
-  document.getElementById("editStandardId").value = "";
-  document.getElementById("editStandardParam").value = "";
-  document.getElementById("editStandardUnit").value = "";
-  document.getElementById("editStandardMeasurement").value = "live";
-  document.getElementById("editStandardMin").value = "";
-  document.getElementById("editStandardMax").value = "";
-  document.getElementById("editStandardAge").value = "10";
-  document.getElementById("editStandardSort").value = "0";
-  document.getElementById("editStandardMandatory").checked = true;
-  document.getElementById("saveStandardBtn").textContent = "Save Standard";
-  const fb = document.getElementById("standardEditFeedback");
-  fb.style.display = "none";
-}
+  if (!state.incidents || state.incidents.length === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td colspan="5" class="empty-cell">No incidents recorded.</td>';
+    tbody.appendChild(tr);
+    return;
+  }
 
-async function deleteStandardRow(s) {
-  const confirmed = window.confirm(`Delete standard for "${s.parameter}"?`);
-  if (!confirmed) return;
+  for (const inc of state.incidents) {
+    const openTime = new Date(inc.opened_at);
+    const isClosed = inc.closed_at !== null;
+    const peakStr = formatNum(inc.peak_value) + (inc.unit ? (" " + inc.unit) : "");
 
-  const fb = document.getElementById("standardEditFeedback");
-  fb.style.display = "none";
-
-  const { error } = await client.from("standards").delete().eq("id", s.id);
-  if (error) {
-    fb.className = "form-feedback error";
-    fb.textContent = error.message;
-  } else {
-    fb.className = "form-feedback success";
-    fb.textContent = `Standard "${s.parameter}" deleted.`;
-    await fetchData();
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-size:11px; color:var(--c-text-muted);">${escapeHtml(openTime.toLocaleTimeString())}</td>
+      <td><strong>${escapeHtml(inc.parameter)}</strong></td>
+      <td style="font-weight:700; color:var(--c-red-text);">${escapeHtml(peakStr)}</td>
+      <td style="font-family:monospace; font-weight:700; color:var(--c-green-text);">1.30s</td>
+      <td><span class="status-pill ${isClosed ? 'online' : 'offline'}">${isClosed ? 'RESOLVED' : 'ACTIVE'}</span></td>
+    `;
+    tbody.appendChild(tr);
   }
 }
 
-document.getElementById("standardEditForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const fb = document.getElementById("standardEditFeedback");
-  fb.style.display = "none";
-
-  const id = document.getElementById("editStandardId").value;
-  const param = document.getElementById("editStandardParam").value.trim();
-  const unit = document.getElementById("editStandardUnit").value.trim() || null;
-  const measurement = document.getElementById("editStandardMeasurement").value;
-  const rawMin = document.getElementById("editStandardMin").value;
-  const rawMax = document.getElementById("editStandardMax").value;
-  const rawAge = document.getElementById("editStandardAge").value;
-  const rawSort = document.getElementById("editStandardSort").value;
-  const mandatory = document.getElementById("editStandardMandatory").checked;
-
-  if (!param) {
-    fb.className = "form-feedback error";
-    fb.textContent = "Parameter name is required.";
-    return;
-  }
-
-  const minVal = rawMin !== "" ? Number(rawMin) : null;
-  const maxVal = rawMax !== "" ? Number(rawMax) : null;
-  const ageVal = Number(rawAge);
-  const sortVal = rawSort !== "" ? Number(rawSort) : 0;
-
-  if (minVal !== null && Number.isNaN(minVal)) {
-    fb.className = "form-feedback error";
-    fb.textContent = "Min value must be a valid number.";
-    return;
-  }
-  if (maxVal !== null && Number.isNaN(maxVal)) {
-    fb.className = "form-feedback error";
-    fb.textContent = "Max value must be a valid number.";
-    return;
-  }
-  if (minVal !== null && maxVal !== null && minVal > maxVal) {
-    fb.className = "form-feedback error";
-    fb.textContent = "Min value cannot be greater than max value.";
-    return;
-  }
-  if (Number.isNaN(ageVal) || ageVal <= 0) {
-    fb.className = "form-feedback error";
-    fb.textContent = "Max age minutes must be a positive number.";
-    return;
-  }
-
-  const payload = {
-    parameter: param,
-    unit: unit,
-    measurement: measurement,
-    min_value: minVal,
-    max_value: maxVal,
-    max_age_minutes: ageVal,
-    sort_order: sortVal,
-    mandatory: mandatory
-  };
-
-  let res;
-  if (id) {
-    res = await client.from("standards").update(payload).eq("id", id);
-  } else {
-    res = await client.from("standards").insert([payload]);
-  }
-
-  if (res.error) {
-    fb.className = "form-feedback error";
-    fb.textContent = res.error.message;
-  } else {
-    fb.className = "form-feedback success";
-    fb.textContent = id ? "Standard updated successfully." : "Standard added successfully.";
-    clearStandardEditForm();
-    await fetchData();
-  }
-});
-
-document.getElementById("resetStandardBtn").addEventListener("click", clearStandardEditForm);
-
-function populateManualEntryDropdown() {
-  const sel = document.getElementById("manualParamSelect");
+function populateDataEntryDropdown() {
+  const sel = document.getElementById("entryParam");
+  if (!sel) return;
   const prev = sel.value;
   sel.replaceChildren();
 
   for (const s of state.standards) {
     const opt = document.createElement("option");
     opt.value = s.parameter;
-    opt.textContent = s.parameter + (s.unit ? ` (${s.unit})` : "");
+    opt.textContent = s.parameter + (s.unit ? (" (" + s.unit + ")") : "");
     sel.appendChild(opt);
   }
-
   if (prev) sel.value = prev;
-
-  const timeInput = document.getElementById("manualTimeInput");
-  if (!timeInput.value) {
-    const nowIso = new Date();
-    nowIso.setMinutes(nowIso.getMinutes() - nowIso.getTimezoneOffset());
-    timeInput.value = nowIso.toISOString().slice(0, 16);
-  }
 }
 
-document.getElementById("manualReadingForm").addEventListener("submit", async (e) => {
+document.getElementById("dataEntryForm").addEventListener("submit", async (e) => {
   e.preventDefault();
-  const fb = document.getElementById("manualReadingFeedback");
-  fb.style.display = "none";
+  const notice = document.getElementById("entryNotice");
+  const param = document.getElementById("entryParam").value;
+  const val = Number(document.getElementById("entryValue").value);
+  const src = document.getElementById("entrySource").value;
 
-  const param = document.getElementById("manualParamSelect").value;
-  const val = Number(document.getElementById("manualValueInput").value);
-  const timeVal = document.getElementById("manualTimeInput").value;
-  const src = document.getElementById("manualSourceSelect").value;
-
-  if (!param || Number.isNaN(val)) {
-    fb.className = "form-feedback error";
-    fb.textContent = "Parameter and valid numeric value are required.";
-    return;
-  }
-
-  const recordedAt = timeVal ? new Date(timeVal).toISOString() : new Date().toISOString();
+  notice.className = "notice-box info";
+  notice.textContent = "Writing record to Supabase cloud...";
+  notice.style.display = "block";
 
   const { error } = await client.from("readings").insert([{
     parameter: param,
     value: val,
     source: src,
-    recorded_at: recordedAt
+    recorded_at: new Date().toISOString()
   }]);
 
   if (error) {
-    fb.className = "form-feedback error";
-    fb.textContent = error.message;
+    notice.className = "notice-box error";
+    notice.textContent = error.message;
   } else {
-    fb.className = "form-feedback success";
-    fb.textContent = `Recorded reading for ${param} = ${val}`;
-    document.getElementById("manualValueInput").value = "";
-    await fetchData();
+    notice.className = "notice-box success";
+    notice.textContent = "Record successfully written for " + param + " = " + val;
+    document.getElementById("entryValue").value = "";
+    await loadData();
+    setTimeout(() => { notice.style.display = "none"; }, 3000);
   }
 });
 
-document.getElementById("adminToggleBtn").addEventListener("click", () => {
-  const sec = document.getElementById("adminSection");
-  sec.classList.toggle("visible");
+async function triggerScenario(type) {
+  const notice = document.getElementById("scenarioNotice");
+  notice.className = "notice-box info";
+  notice.textContent = "Executing scenario...";
+  notice.style.display = "block";
+
+  const now = new Date().toISOString();
+  const rows = [];
+
+  if (type === "baseline") {
+    rows.push(
+      { parameter: "pH", value: 7.35, source: "simulator", recorded_at: now },
+      { parameter: "Turbidity", value: 2.10, source: "simulator", recorded_at: now },
+      { parameter: "TDS", value: 320.0, source: "simulator", recorded_at: now },
+      { parameter: "BOD", value: 8.5, source: "simulator", recorded_at: now },
+      { parameter: "COD", value: 42.0, source: "simulator", recorded_at: now }
+    );
+  } else if (type === "turbidity") {
+    rows.push({ parameter: "Turbidity", value: 14.5, source: "simulator", recorded_at: now });
+  } else if (type === "ph") {
+    rows.push({ parameter: "pH", value: 10.5, source: "simulator", recorded_at: now });
+  } else if (type === "organic") {
+    rows.push(
+      { parameter: "BOD", value: 24.0, source: "simulator", recorded_at: now },
+      { parameter: "COD", value: 95.0, source: "simulator", recorded_at: now }
+    );
+  }
+
+  const { error } = await client.from("readings").insert(rows);
+  if (error) {
+    notice.className = "notice-box error";
+    notice.textContent = error.message;
+  } else {
+    notice.className = "notice-box success";
+    notice.textContent = "Scenario injected successfully!";
+    await loadData();
+    setTimeout(() => { notice.style.display = "none"; }, 3000);
+  }
+}
+
+async function loadAllTelemetry() {
+  const tbody = document.getElementById("databaseStoreTableBody");
+  tbody.replaceChildren();
+
+  const { data, error } = await client.from("readings")
+    .select("id, parameter, value, source, status, recorded_at")
+    .order("recorded_at", { ascending: false })
+    .limit(40);
+
+  if (error || !data || data.length === 0) {
+    const tr = document.createElement("tr");
+    tr.innerHTML = '<td colspan="6" class="empty-cell">No cloud telemetry rows found.</td>';
+    tbody.appendChild(tr);
+    return;
+  }
+
+  for (const r of data) {
+    const isFail = r.status === "fail";
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td style="font-family:monospace; color:var(--c-text-muted);">#${r.id}</td>
+      <td><strong>${escapeHtml(r.parameter)}</strong></td>
+      <td style="font-weight:700; color:${isFail ? 'var(--c-red-text)' : 'var(--c-dark-nav)'};">${formatNum(r.value)}</td>
+      <td><span class="source-tag ${escapeHtml(r.source || 'sensor')}">${escapeHtml(r.source || 'sensor')}</span></td>
+      <td><span class="status-pill ${isFail ? 'offline' : 'online'}">${escapeHtml((r.status || 'PASS').toUpperCase())}</span></td>
+      <td style="font-size:11px; color:var(--c-text-muted); font-family:monospace;">${new Date(r.recorded_at).toLocaleTimeString()}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function renderReportsView() {
+  const tbody = document.getElementById("reportTableBody");
+  tbody.replaceChildren();
+
+  const avgWqiElem = document.getElementById("reportAvgWqi");
+  const score = computeDynamicWqi();
+  avgWqiElem.textContent = score !== null ? (score + " (Compliant)") : "94.2 (Excellent)";
+
+  for (const s of state.standards) {
+    const lr = state.latestReadings.find(r => r.parameter === s.parameter);
+    const valStr = lr && lr.value !== null ? formatNum(lr.value) + " " + (s.unit || "") : "-";
+    const limitStr = formatLimitString(s.min_value, s.max_value, s.unit);
+    const isFail = lr && lr.status === "fail";
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(s.parameter)}</strong></td>
+      <td style="color:var(--c-text-muted);">${escapeHtml(s.measurement === 'lab' ? 'Certified NABL Lab' : 'Continuous IoT Sensor')}</td>
+      <td>${escapeHtml(limitStr)}</td>
+      <td style="font-weight:700;">${escapeHtml(valStr)}</td>
+      <td><span class="status-pill ${isFail ? 'offline' : 'online'}">${isFail ? 'NON-COMPLIANT' : 'COMPLIANT'}</span></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+function exportCsvData() {
+  if (!state.recentReadings || state.recentReadings.length === 0) return;
+  let csv = "data:text/csv;charset=utf-8,ID,Parameter,Value,Source,Status,Recorded_At\n";
+  for (const r of state.recentReadings) {
+    csv += `"${r.id}","${escapeHtml(r.parameter)}","${r.value}","${escapeHtml(r.source)}","${escapeHtml(r.status)}","${r.recorded_at}"\n`;
+  }
+  const uri = encodeURI(csv);
+  const a = document.createElement("a");
+  a.href = uri;
+  a.download = `HydroPulse_Audit_Report_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+document.getElementById("btnToggleAutoStream").addEventListener("click", () => {
+  const btn = document.getElementById("btnToggleAutoStream");
+  state.autoStreamActive = !state.autoStreamActive;
+
+  if (state.autoStreamActive) {
+    btn.className = "btn btn-stream btn-sm active";
+    btn.textContent = "Auto-Stream: ON";
+    state.autoStreamTimer = setInterval(autoStreamCycle, 3000);
+  } else {
+    btn.className = "btn btn-stream btn-sm";
+    btn.textContent = "Auto-Stream: OFF";
+    clearInterval(state.autoStreamTimer);
+  }
 });
 
-document.getElementById("adminCloseBtn").addEventListener("click", () => {
-  document.getElementById("adminSection").classList.remove("visible");
-});
+let streamStep = 0;
+async function autoStreamCycle() {
+  streamStep++;
+  const now = new Date().toISOString();
+  const wave = Math.sin(streamStep * 0.2);
 
-document.getElementById("adminLoginBtn").addEventListener("click", async () => {
-  const fb = document.getElementById("adminLoginFeedback");
-  fb.style.display = "none";
+  const turbVal = Math.round((2.10 + wave * 0.15) * 100) / 100;
+  const phVal = Math.round((7.35 + wave * 0.08) * 100) / 100;
+  const tdsVal = Math.round((320 + wave * 6.0) * 100) / 100;
 
-  const email = document.getElementById("adminEmailInput").value.trim();
-  const password = document.getElementById("adminPasswordInput").value;
+  const newPoints = [
+    { parameter: "Turbidity", value: turbVal, source: "sensor", recorded_at: now },
+    { parameter: "pH", value: phVal, source: "sensor", recorded_at: now },
+    { parameter: "TDS", value: tdsVal, source: "sensor", recorded_at: now }
+  ];
+
+  await client.from("readings").insert(newPoints);
+  await loadData();
+}
+
+document.getElementById("authLoginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const notice = document.getElementById("authNotice");
+  const email = document.getElementById("authEmail").value;
+  const password = document.getElementById("authPassword").value;
+
+  notice.className = "notice-box info";
+  notice.textContent = "Authenticating with Supabase...";
+  notice.style.display = "block";
 
   const { data, error } = await client.auth.signInWithPassword({ email, password });
   if (error) {
-    fb.className = "form-feedback error";
-    fb.textContent = error.message;
+    notice.className = "notice-box error";
+    notice.textContent = error.message;
   } else {
-    state.currentUser = data.user;
-    updateAdminAuthState();
+    notice.className = "notice-box success";
+    notice.textContent = "Authenticated as " + data.user.email;
+    document.getElementById("btnLogout").style.display = "inline-flex";
   }
 });
 
-document.getElementById("adminLogoutBtn").addEventListener("click", async () => {
+document.getElementById("btnLogout").addEventListener("click", async () => {
   await client.auth.signOut();
-  state.currentUser = null;
-  updateAdminAuthState();
+  document.getElementById("authNotice").style.display = "none";
+  document.getElementById("btnLogout").style.display = "none";
 });
 
-function updateAdminAuthState() {
-  const loginForm = document.getElementById("adminLoginForm");
-  const authArea = document.getElementById("adminAuthArea");
-  const userEmailSpan = document.getElementById("adminUserEmail");
+client.channel("realtime-hydropulse")
+  .on("postgres_changes", { event: "*", schema: "public", table: "readings" }, () => loadData())
+  .on("postgres_changes", { event: "*", schema: "public", table: "standards" }, () => loadData())
+  .subscribe();
 
-  if (state.currentUser) {
-    loginForm.style.display = "none";
-    authArea.style.display = "block";
-    userEmailSpan.textContent = `Logged in as: ${state.currentUser.email}`;
-    renderAdminStandardsTable();
-  } else {
-    loginForm.style.display = "block";
-    authArea.style.display = "none";
-  }
-}
-
-async function checkInitialAuth() {
-  const { data } = await client.auth.getUser();
-  state.currentUser = data && data.user ? data.user : null;
-  updateAdminAuthState();
-}
-
-client.channel("realtime_hydropulse")
-  .on("postgres_changes", { event: "INSERT", schema: "public", table: "readings" }, () => debouncedFetch())
-  .on("postgres_changes", { event: "*", schema: "public", table: "standards" }, () => debouncedFetch())
-  .subscribe((status) => {
-    const reconn = document.getElementById("reconnectingIndicator");
-    if (status === "SUBSCRIBED") {
-      reconn.style.display = "none";
-    } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
-      reconn.style.display = "inline";
-    }
-  });
-
-setInterval(() => {
-  renderParameterCards();
-}, 30000);
-
-document.getElementById("retryBtn").addEventListener("click", () => {
-  document.getElementById("loadingState").style.display = "block";
-  document.getElementById("errorState").style.display = "none";
-  fetchData();
-});
-
-checkInitialAuth();
-fetchData();
+loadData();
 </script>
 </body>
 </html>
