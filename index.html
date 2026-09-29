@@ -117,31 +117,6 @@ body {
   border-color: var(--c-red-border);
 }
 
-.workflow-strip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-  font-size: 12px;
-  color: var(--c-nav-text);
-}
-
-.workflow-step {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-}
-
-.workflow-step.active {
-  color: var(--c-cyan-accent);
-  font-weight: 600;
-}
-
-.workflow-arrow {
-  color: var(--c-dark-hover);
-}
 
 .nav-actions {
   display: flex;
@@ -789,21 +764,6 @@ tr:last-child td {
       <span id="networkPill" class="status-pill online">Live</span>
     </div>
 
-    <div class="workflow-strip">
-      <span class="workflow-step active">STP Outlet</span>
-      <span class="workflow-arrow">&gt;</span>
-      <span class="workflow-step active">Filter Media</span>
-      <span class="workflow-arrow">&gt;</span>
-      <span class="workflow-step active">Sensors/Lab</span>
-      <span class="workflow-arrow">&gt;</span>
-      <span class="workflow-step active">Database</span>
-      <span class="workflow-arrow">&gt;</span>
-      <span class="workflow-step active">Standards Comparison</span>
-      <span class="workflow-arrow">&gt;</span>
-      <span class="workflow-step active">Assessment</span>
-      <span class="workflow-arrow">&gt;</span>
-      <span class="workflow-step active">Recharge Decision</span>
-    </div>
 
     <div class="nav-actions">
       <button type="button" id="btnOpenRecord" class="btn btn-primary btn-sm">Record Reading</button>
